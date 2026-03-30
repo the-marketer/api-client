@@ -12,6 +12,7 @@ use GuzzleHttp\Psr7\Response;
 use Illuminate\Validation\ValidationException as IlluminateValidationException;
 use NotificationService\Sdk\Internal\ReportsApi;
 use Psr\Http\Message\RequestInterface;
+use TheMarketer\ApiClient\Common\Config;
 use TheMarketer\ApiClient\Exception\ValidationException;
 
 final class ReportsApiTest extends TestCase
@@ -43,7 +44,7 @@ final class ReportsApiTest extends TestCase
         $mock = new MockHandler($queue);
         $client = new Client(['handler' => $mock]);
 
-        $api = new ReportsApi(self::DOMAIN_KEY, self::API_KEY, $client, self::BASE_URL);
+        $api = new ReportsApi(new \TheMarketer\ApiClient\HttpClient($client, new Config(self::DOMAIN_KEY, self::API_KEY), self::BASE_URL));
 
         return [$api, $bucket];
     }
@@ -333,7 +334,7 @@ final class ReportsApiTest extends TestCase
     public function testGetEmailCampaignsThrowsWhenDomainKeyMissing(): void
     {
         $client = new Client(['handler' => HandlerStack::create(new MockHandler([new Response(200)]))]);
-        $api = new ReportsApi(null, self::API_KEY, $client, self::BASE_URL);
+        $api = new ReportsApi(new \TheMarketer\ApiClient\HttpClient($client, new Config('', self::API_KEY), self::BASE_URL));
 
         $this->expectException(ValidationException::class);
         $this->expectExceptionMessage('Customer ID not provided.');
@@ -344,7 +345,7 @@ final class ReportsApiTest extends TestCase
     public function testGetEmailCampaignsThrowsWhenApiKeyMissing(): void
     {
         $client = new Client(['handler' => HandlerStack::create(new MockHandler([new Response(200)]))]);
-        $api = new ReportsApi(self::DOMAIN_KEY, null, $client, self::BASE_URL);
+        $api = new ReportsApi(new \TheMarketer\ApiClient\HttpClient($client, new Config(self::DOMAIN_KEY, ''), self::BASE_URL));
 
         $this->expectException(ValidationException::class);
         $this->expectExceptionMessage('Rest key not provided.');

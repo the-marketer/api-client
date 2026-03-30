@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace NotificationService\Sdk\Internal;
 
-use GuzzleHttp\ClientInterface;
 use GuzzleHttp\Exception\GuzzleException;
 use JsonException;
 use TheMarketer\ApiClient\DTO\Campaigns\CampaignId;
@@ -15,18 +14,15 @@ use TheMarketer\ApiClient\Exception\CustomerNotFoundException;
 use TheMarketer\ApiClient\Exception\MethodNotAllowedException;
 use TheMarketer\ApiClient\Exception\UnauthorizedException;
 use TheMarketer\ApiClient\Exception\ValidationException;
-use TheMarketer\ApiClient\HttpClient;
+use TheMarketer\ApiClient\ApiGateway;
 
-class CampaignsApi extends HttpClient
+class CampaignsApi
 {
     private const CAMPAIGNS_ENDPOINT = '/campaigns';
+
     public function __construct(
-        ?string $domainKey,
-        ?string $domainApiKey,
-        ClientInterface $httpClient,
-        ?string $baseUrl = null
+        private readonly ApiGateway $api,
     ) {
-        parent::__construct($httpClient, $domainKey, $domainApiKey, $baseUrl);
     }
 
     /**
@@ -42,8 +38,8 @@ class CampaignsApi extends HttpClient
      */
     public function list(): array
     {
-        $request = $this->getRequest(self::CAMPAIGNS_ENDPOINT . '/list');
-        return $this->decodeJson($this->sendJson($request));
+        $request = $this->api->getRequest(self::CAMPAIGNS_ENDPOINT . '/list');
+        return $this->api->decodeJson($this->api->sendJson($request));
     }
 
     /**
@@ -62,8 +58,8 @@ class CampaignsApi extends HttpClient
         try {
             $dto = CreateCampaign::validateAndCreate($payload);
 
-            $request = $this->postRequest(self::CAMPAIGNS_ENDPOINT . '/create', $dto->toCampaignsApiPayload());
-            return $this->decodeJson($this->sendJson($request));
+            $request = $this->api->postRequest(self::CAMPAIGNS_ENDPOINT . '/create', $dto->toCampaignsApiPayload());
+            return $this->api->decodeJson($this->api->sendJson($request));
         } catch (\InvalidArgumentException $e) {
             throw new ValidationException($e->getMessage(), 422);
         }
@@ -88,8 +84,8 @@ class CampaignsApi extends HttpClient
 
         $path = sprintf('/%s/email/get-report', rawurlencode($dto->id));
 
-        $request = $this->getRequest(self::CAMPAIGNS_ENDPOINT . $path);
-        return $this->decodeJson($this->sendJson($request));
+        $request = $this->api->getRequest(self::CAMPAIGNS_ENDPOINT . $path);
+        return $this->api->decodeJson($this->api->sendJson($request));
     }
 
     /**
@@ -111,7 +107,7 @@ class CampaignsApi extends HttpClient
             $query['limit'] = $dto->limit;
         }
 
-        $request = $this->getRequest('/get-latest-campaign', $query);
-        return $this->decodeJson($this->sendJson($request));
+        $request = $this->api->getRequest('/get-latest-campaign', $query);
+        return $this->api->decodeJson($this->api->sendJson($request));
     }
 }

@@ -4,9 +4,8 @@ declare(strict_types=1);
 
 namespace TheMarketer\ApiClient\DTO\Subscribers;
 
-use Spatie\LaravelData\Attributes\Validation\Email;
-use Spatie\LaravelData\Attributes\Validation\Required;
-use Spatie\LaravelData\Data;
+use Symfony\Component\Validator\Constraints as Assert;
+use TheMarketer\ApiClient\Common\Data;
 
 /**
  * Adresă de email pentru query (ex. status) sau body JSON (ex. anonymize) — aceeași validare.
@@ -14,8 +13,8 @@ use Spatie\LaravelData\Data;
 class SubscriberEmail extends Data
 {
     public function __construct(
-        #[Required]
-        #[Email]
+        #[Assert\NotBlank]
+        #[Assert\Email]
         public string $email,
     ) {
     }

@@ -1,8 +1,8 @@
 <?php
 
-namespace TheMarketer\ApiClient\Common;
+declare(strict_types=1);
 
-use Spatie\LaravelData\Data;
+namespace TheMarketer\ApiClient\Common;
 
 abstract class AbstractPayload extends Data implements ApiPayloadInterface
 {

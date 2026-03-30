@@ -10,9 +10,11 @@ use GuzzleHttp\Handler\MockHandler;
 use GuzzleHttp\HandlerStack;
 use GuzzleHttp\Psr7\Response;
 use Illuminate\Validation\ValidationException as IlluminateValidationException;
+use NotificationService\Sdk\Internal\CredentialsClient;
 use Psr\Http\Message\RequestInterface;
-use TheMarketer\ApiClient\CredentialsClient;
+use TheMarketer\ApiClient\Common\Config;
 use TheMarketer\ApiClient\Exception\ValidationException;
+use TheMarketer\ApiClient\HttpClient;
 
 final class CredentialsClientTest extends TestCase
 {
@@ -44,10 +46,7 @@ final class CredentialsClientTest extends TestCase
         $http = new Client(['handler' => $mock]);
 
         $client = new CredentialsClient(
-            $http,
-            self::API_KEY,
-            self::DOMAIN_KEY,
-            self::BASE_URL,
+            new HttpClient($http, new Config(self::DOMAIN_KEY, self::API_KEY), self::BASE_URL),
             null,
         );
 
@@ -88,10 +87,7 @@ final class CredentialsClientTest extends TestCase
         $http = new Client(['handler' => $mock]);
 
         $client = new CredentialsClient(
-            $http,
-            self::API_KEY,
-            self::DOMAIN_KEY,
-            self::BASE_URL,
+            new HttpClient($http, new Config(self::DOMAIN_KEY, self::API_KEY), self::BASE_URL),
             'tracking-key-xyz',
         );
 
@@ -112,7 +108,7 @@ final class CredentialsClientTest extends TestCase
     public function testCheckCredentialsThrowsWhenTrackingKeyMissing(): void
     {
         $client = new Client(['handler' => HandlerStack::create(new MockHandler([new Response(200)]))]);
-        $api = new CredentialsClient($client, self::API_KEY, self::DOMAIN_KEY, self::BASE_URL, null);
+        $api = new CredentialsClient(new HttpClient($client, new Config(self::DOMAIN_KEY, self::API_KEY), self::BASE_URL), null);
 
         $this->expectException(IlluminateValidationException::class);
 
@@ -327,7 +323,7 @@ final class CredentialsClientTest extends TestCase
     public function testGetCostsThrowsWhenDomainKeyMissing(): void
     {
         $client = new Client(['handler' => HandlerStack::create(new MockHandler([new Response(200)]))]);
-        $api = new CredentialsClient($client, self::API_KEY, null, self::BASE_URL);
+        $api = new CredentialsClient(new HttpClient($client, new Config('', self::API_KEY), self::BASE_URL));
 
         $this->expectException(ValidationException::class);
         $this->expectExceptionMessage('Customer ID not provided.');
@@ -338,7 +334,7 @@ final class CredentialsClientTest extends TestCase
     public function testGetCostsThrowsWhenApiKeyMissing(): void
     {
         $client = new Client(['handler' => HandlerStack::create(new MockHandler([new Response(200)]))]);
-        $api = new CredentialsClient($client, null, self::DOMAIN_KEY, self::BASE_URL);
+        $api = new CredentialsClient(new HttpClient($client, new Config(self::DOMAIN_KEY, ''), self::BASE_URL));
 
         $this->expectException(ValidationException::class);
         $this->expectExceptionMessage('Rest key not provided.');

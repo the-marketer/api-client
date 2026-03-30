@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace NotificationService\Sdk\Internal;
 
-use GuzzleHttp\ClientInterface;
 use GuzzleHttp\Exception\GuzzleException;
 use JsonException;
 use TheMarketer\ApiClient\DTO\MerchantPro\MerchantProSettings;
@@ -16,17 +15,13 @@ use TheMarketer\ApiClient\Exception\CustomerNotFoundException;
 use TheMarketer\ApiClient\Exception\MethodNotAllowedException;
 use TheMarketer\ApiClient\Exception\UnauthorizedException;
 use TheMarketer\ApiClient\Exception\ValidationException;
-use TheMarketer\ApiClient\HttpClient;
+use TheMarketer\ApiClient\ApiGateway;
 
-class ReviewsApi extends HttpClient
+class ReviewsApi
 {
     public function __construct(
-        ?string $domainKey,
-        ?string $domainApiKey,
-        ClientInterface $httpClient,
-        ?string $baseUrl = null
+        private readonly ApiGateway $api,
     ) {
-        parent::__construct($httpClient, $domainKey, $domainApiKey, $baseUrl);
     }
 
     /**
@@ -45,8 +40,8 @@ class ReviewsApi extends HttpClient
     {
         $dto = ProductReviewsQuery::validateAndCreate($query);
 
-        $request = $this->getRequest('/product_reviews', $dto->toApiPayload());
-        return $this->decodeJson($this->sendJson($request));
+        $request = $this->api->getRequest('/product_reviews', $dto->toApiPayload());
+        return $this->api->decodeJson($this->api->sendJson($request));
     }
 
     /**
@@ -65,8 +60,8 @@ class ReviewsApi extends HttpClient
     {
         $dto = AddReview::validateAndCreate($payload)->toArray();
 
-        $request = $this->postRequest('/add_review', $dto);
-        return $this->decodeJson($this->sendJson($request));
+        $request = $this->api->postRequest('/add_review', $dto);
+        return $this->api->decodeJson($this->api->sendJson($request));
     }
 
     /**
@@ -85,8 +80,8 @@ class ReviewsApi extends HttpClient
     {
         $dto = MerchantAddReview::validateAndCreate($payload);
 
-        $request = $this->postRequest('/merchant_add_review', $dto->toApiPayload());
-        return $this->decodeJson($this->sendJson($request));
+        $request = $this->api->postRequest('/merchant_add_review', $dto->toApiPayload());
+        return $this->api->decodeJson($this->api->sendJson($request));
     }
 
     /**
@@ -105,7 +100,7 @@ class ReviewsApi extends HttpClient
     {
         $dto = MerchantProSettings::validateAndCreate($payload);
 
-        $request = $this->postRequest('/merchantpro_settings', $dto->toApiPayload());
-        return $this->decodeJson($this->sendJson($request));
+        $request = $this->api->postRequest('/merchantpro_settings', $dto->toApiPayload());
+        return $this->api->decodeJson($this->api->sendJson($request));
     }
 }

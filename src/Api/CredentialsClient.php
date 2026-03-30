@@ -2,30 +2,22 @@
 
 declare(strict_types=1);
 
-namespace TheMarketer\ApiClient;
+namespace NotificationService\Sdk\Internal;
 
-use GuzzleHttp\ClientInterface;
 use GuzzleHttp\Exception\GuzzleException;
 use TheMarketer\ApiClient\DTO\Credentials\CheckCredentialsQuery;
 use TheMarketer\ApiClient\DTO\Credentials\GetDeliveryLogsQuery;
 use TheMarketer\ApiClient\DTO\Credentials\GetEnteredAutomationQuery;
 use TheMarketer\ApiClient\DTO\Credentials\GetReferralLinkQuery;
-use TheMarketer\ApiClient\Exception\ApiException;
-use TheMarketer\ApiClient\Exception\CustomerNotFoundException;
-use TheMarketer\ApiClient\Exception\MethodNotAllowedException;
-use TheMarketer\ApiClient\Exception\UnauthorizedException;
 use TheMarketer\ApiClient\Exception\ValidationException;
+use TheMarketer\ApiClient\ApiGateway;
 
-final class CredentialsClient extends HttpClient
+final class CredentialsClient
 {
     public function __construct(
-        ClientInterface $httpClient,
-        ?string $domainApiKey,
-        ?string $domainKey,
-        ?string $baseUrl = null,
+        private readonly ApiGateway $http,
         private readonly ?string $trackingKey = null,
     ) {
-        parent::__construct($httpClient, $domainKey, $domainApiKey, $baseUrl);
     }
 
     /**
@@ -39,11 +31,11 @@ final class CredentialsClient extends HttpClient
     {
         $dto = CheckCredentialsQuery::validateAndCreate([
             'k' => $this->trackingKey,
-            'r' => $this->domainApiKey,
-            'u' => $this->domainKey,
+            'r' => $this->http->config()->restKey(),
+            'u' => $this->http->config()->customerId(),
         ]);
 
-        $request = $this->postRequest(
+        $request = $this->http->postRequest(
             '/check-credentials',
             [],
             $dto->toApiPayload(),
@@ -51,7 +43,7 @@ final class CredentialsClient extends HttpClient
             false,
         );
 
-        return $this->decodeJson($this->sendJson($request));
+        return $this->http->decodeJson($this->http->sendJson($request));
     }
 
     /**
@@ -59,7 +51,7 @@ final class CredentialsClient extends HttpClient
      *
      * @return array<string, string>
      */
-    protected function checkCredentialsHeaders(): array
+    private function checkCredentialsHeaders(): array
     {
         return [];
     }
@@ -75,9 +67,9 @@ final class CredentialsClient extends HttpClient
      */
     public function checkApiCredentials(): array
     {
-        $request = $this->postRequest('/check-api-credentials', []);
+        $request = $this->http->postRequest('/check-api-credentials', []);
 
-        return $this->decodeJson($this->sendJson($request));
+        return $this->http->decodeJson($this->http->sendJson($request));
     }
 
     /**
@@ -86,8 +78,8 @@ final class CredentialsClient extends HttpClient
      */
     public function getCosts(): array
     {
-        $request = $this->getRequest('/get_costs');
-        return $this->decodeJson($this->sendJson($request));
+        $request = $this->http->getRequest('/get_costs');
+        return $this->http->decodeJson($this->http->sendJson($request));
     }
 
     /**
@@ -96,8 +88,8 @@ final class CredentialsClient extends HttpClient
      */
     public function getRealtimeVisitors(): array
     {
-        $request = $this->getRequest('/realtime_visitors');
-        return $this->decodeJson($this->sendJson($request));
+        $request = $this->http->getRequest('/realtime_visitors');
+        return $this->http->decodeJson($this->http->sendJson($request));
     }
 
     /**
@@ -106,8 +98,8 @@ final class CredentialsClient extends HttpClient
      */
     public function getSmsCredit(): array
     {
-        $request = $this->getRequest('/check-sms-credit');
-        return $this->decodeJson($this->sendJson($request));
+        $request = $this->http->getRequest('/check-sms-credit');
+        return $this->http->decodeJson($this->http->sendJson($request));
     }
 
     /**
@@ -125,9 +117,9 @@ final class CredentialsClient extends HttpClient
             $query['email'] = $dto->email;
         }
 
-        $request = $this->getRequest('/get-referral-link', $query);
+        $request = $this->http->getRequest('/get-referral-link', $query);
 
-        return (string) $this->sendJson($request)->getBody();
+        return (string) $this->http->sendJson($request)->getBody();
     }
 
     /**
@@ -139,8 +131,8 @@ final class CredentialsClient extends HttpClient
     {
         $dto = GetDeliveryLogsQuery::validateAndCreate($payload);
 
-        $request = $this->getRequest('/delivery-logs', $dto->toApiPayload());
-        return $this->decodeJson($this->sendJson($request));
+        $request = $this->http->getRequest('/delivery-logs', $dto->toApiPayload());
+        return $this->http->decodeJson($this->http->sendJson($request));
     }
 
     /**
@@ -153,8 +145,8 @@ final class CredentialsClient extends HttpClient
         try {
             $dto = GetEnteredAutomationQuery::validateAndCreate($payload);
 
-            $request = $this->getRequest('/entered-automation', $dto->toApiPayload());
-            return $this->decodeJson($this->sendJson($request));
+            $request = $this->http->getRequest('/entered-automation', $dto->toApiPayload());
+            return $this->http->decodeJson($this->http->sendJson($request));
         } catch (\InvalidArgumentException $e) {
             throw new ValidationException($e->getMessage(), 422);
         }

@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace NotificationService\Sdk\Internal;
 
-use GuzzleHttp\ClientInterface;
 use GuzzleHttp\Exception\GuzzleException;
 use JsonException;
 use TheMarketer\ApiClient\DTO\Products\CreateProduct;
@@ -16,17 +15,13 @@ use TheMarketer\ApiClient\Exception\CustomerNotFoundException;
 use TheMarketer\ApiClient\Exception\MethodNotAllowedException;
 use TheMarketer\ApiClient\Exception\UnauthorizedException;
 use TheMarketer\ApiClient\Exception\ValidationException;
-use TheMarketer\ApiClient\HttpClient;
+use TheMarketer\ApiClient\ApiGateway;
 
-class ProductsApi extends HttpClient
+class ProductsApi
 {
     public function __construct(
-        ?string $domainKey,
-        ?string $domainApiKey,
-        ClientInterface $httpClient,
-        ?string $baseUrl = null
+        private readonly ApiGateway $api,
     ) {
-        parent::__construct($httpClient, $domainKey, $domainApiKey, $baseUrl);
     }
 
     /**
@@ -44,8 +39,8 @@ class ProductsApi extends HttpClient
     {
         $dto = CreateProduct::validateAndCreate($payload);
 
-        $request = $this->postRequest('/product/create', $dto->toApiPayload());
-        return $this->decodeJson($this->sendJson($request));
+        $request = $this->api->postRequest('/product/create', $dto->toApiPayload());
+        return $this->api->decodeJson($this->api->sendJson($request));
     }
 
     /**
@@ -65,8 +60,8 @@ class ProductsApi extends HttpClient
     {
         $dto = UpdateProduct::validateAndCreate($payload);
 
-        $request = $this->postRequest('/product/update', $dto->toApiPayload());
-        return $this->decodeJson($this->sendJson($request));
+        $request = $this->api->postRequest('/product/update', $dto->toApiPayload());
+        return $this->api->decodeJson($this->api->sendJson($request));
     }
 
 
@@ -87,8 +82,8 @@ class ProductsApi extends HttpClient
     {
         $dto = SyncCategory::validateAndCreate($payload)->toArray();
 
-        $request = $this->postRequest('/category/upsert', $dto);
-        return $this->decodeJson($this->sendJson($request));
+        $request = $this->api->postRequest('/category/upsert', $dto);
+        return $this->api->decodeJson($this->api->sendJson($request));
     }
 
     /**
@@ -108,7 +103,7 @@ class ProductsApi extends HttpClient
     {
         $dto = SyncBrand::validateAndCreate($payload)->toArray();
 
-        $request = $this->postRequest('/brand/upsert', $dto);
-        return $this->decodeJson($this->sendJson($request));
+        $request = $this->api->postRequest('/brand/upsert', $dto);
+        return $this->api->decodeJson($this->api->sendJson($request));
     }
 }

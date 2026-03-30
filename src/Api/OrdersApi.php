@@ -2,22 +2,17 @@
 
 namespace NotificationService\Sdk\Internal;
 
-use GuzzleHttp\ClientInterface;
 use GuzzleHttp\Exception\GuzzleException;
 use TheMarketer\ApiClient\DTO\Orders\SaveOrder;
 use TheMarketer\ApiClient\DTO\Orders\UpdateFeedUrl;
 use TheMarketer\ApiClient\DTO\Orders\UpdateOrderStatus;
-use TheMarketer\ApiClient\HttpClient;
+use TheMarketer\ApiClient\ApiGateway;
 
-class OrdersApi extends HttpClient
+class OrdersApi
 {
     public function __construct(
-        ?string $domainKey,
-        ?string $domainApiKey,
-        ClientInterface $httpClient,
-        ?string $baseUrl = null
+        private readonly ApiGateway $api,
     ) {
-        parent::__construct($httpClient, $domainKey, $domainApiKey, $baseUrl);
     }
 
     /**
@@ -31,8 +26,8 @@ class OrdersApi extends HttpClient
             'order_status' => $order_status,
         ])->toArray();
 
-        $request = $this->getRequest('/update_order_status', $dto);
-        return $this->decodeJson($this->sendJson($request));
+        $request = $this->api->getRequest('/update_order_status', $dto);
+        return $this->api->decodeJson($this->api->sendJson($request));
     }
 
     /**
@@ -55,8 +50,8 @@ class OrdersApi extends HttpClient
     {
         $dto = SaveOrder::validateAndCreate($payload);
 
-        $request = $this->postRequest('/save_order', $dto->toApiPayload());
-        return $this->decodeJson($this->sendJson($request));
+        $request = $this->api->postRequest('/save_order', $dto->toApiPayload());
+        return $this->api->decodeJson($this->api->sendJson($request));
     }
 
     /**
@@ -66,8 +61,8 @@ class OrdersApi extends HttpClient
     public function saveOrderRetail(array $payload): array {
         $dto = SaveOrder::validateAndCreate($payload);
 
-        $request = $this->postRequest('/save_order_retail', $dto->toApiPayload());
-        return $this->decodeJson($this->sendJson($request));
+        $request = $this->api->postRequest('/save_order_retail', $dto->toApiPayload());
+        return $this->api->decodeJson($this->api->sendJson($request));
     }
 
     /**
@@ -80,8 +75,8 @@ class OrdersApi extends HttpClient
     {
         $dto = UpdateFeedUrl::fromUrlAndOptionalType($url, $type);
 
-        $request = $this->postRequest('/update_feed_url', $dto->toApiPayload());
-        return $this->decodeJson($this->sendJson($request));
+        $request = $this->api->postRequest('/update_feed_url', $dto->toApiPayload());
+        return $this->api->decodeJson($this->api->sendJson($request));
     }
 
     /**
@@ -94,8 +89,8 @@ class OrdersApi extends HttpClient
     {
         $dto = UpdateFeedUrl::fromUrlAndOptionalType($url, $type);
 
-        $request = $this->postRequest('/update_order_feed_url', $dto->toApiPayload());
-        return $this->decodeJson($this->sendJson($request));
+        $request = $this->api->postRequest('/update_order_feed_url', $dto->toApiPayload());
+        return $this->api->decodeJson($this->api->sendJson($request));
     }
 
     /**
@@ -106,7 +101,7 @@ class OrdersApi extends HttpClient
      */
     public function getEcommerceStats(): array
     {
-        $request = $this->getRequest('/get-ecommerce-stats');
-        return $this->decodeJson($this->sendJson($request));
+        $request = $this->api->getRequest('/get-ecommerce-stats');
+        return $this->api->decodeJson($this->api->sendJson($request));
     }
 }

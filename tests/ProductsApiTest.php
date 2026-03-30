@@ -12,6 +12,7 @@ use GuzzleHttp\Psr7\Response;
 use Illuminate\Validation\ValidationException as IlluminateValidationException;
 use NotificationService\Sdk\Internal\ProductsApi;
 use Psr\Http\Message\RequestInterface;
+use TheMarketer\ApiClient\Common\Config;
 use TheMarketer\ApiClient\Exception\ValidationException;
 
 final class ProductsApiTest extends TestCase
@@ -43,7 +44,7 @@ final class ProductsApiTest extends TestCase
         $mock = new MockHandler($queue);
         $client = new Client(['handler' => $mock]);
 
-        $api = new ProductsApi(self::DOMAIN_KEY, self::API_KEY, $client, self::BASE_URL);
+        $api = new ProductsApi(new \TheMarketer\ApiClient\HttpClient($client, new Config(self::DOMAIN_KEY, self::API_KEY), self::BASE_URL));
 
         return [$api, $bucket];
     }
@@ -228,7 +229,7 @@ final class ProductsApiTest extends TestCase
     public function testCreateProductThrowsWhenDomainKeyMissing(): void
     {
         $client = new Client(['handler' => HandlerStack::create(new MockHandler([new Response(200)]))]);
-        $api = new ProductsApi(null, self::API_KEY, $client, self::BASE_URL);
+        $api = new ProductsApi(new \TheMarketer\ApiClient\HttpClient($client, new Config('', self::API_KEY), self::BASE_URL));
 
         $this->expectException(ValidationException::class);
         $this->expectExceptionMessage('Customer ID not provided.');
@@ -239,7 +240,7 @@ final class ProductsApiTest extends TestCase
     public function testCreateProductThrowsWhenApiKeyMissing(): void
     {
         $client = new Client(['handler' => HandlerStack::create(new MockHandler([new Response(200)]))]);
-        $api = new ProductsApi(self::DOMAIN_KEY, null, $client, self::BASE_URL);
+        $api = new ProductsApi(new \TheMarketer\ApiClient\HttpClient($client, new Config(self::DOMAIN_KEY, ''), self::BASE_URL));
 
         $this->expectException(ValidationException::class);
         $this->expectExceptionMessage('Rest key not provided.');

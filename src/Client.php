@@ -4,14 +4,12 @@ declare(strict_types=1);
 
 namespace TheMarketer\ApiClient;
 
-use GuzzleHttp\Client as GuzzleClient;
-use GuzzleHttp\ClientInterface;
 use GuzzleHttp\Exception\GuzzleException;
 use JsonException;
-use TheMarketer\ApiClient\Exception\ValidationException;
 use NotificationService\Sdk\Internal\AppPushApi;
 use NotificationService\Sdk\Internal\CampaignsApi;
 use NotificationService\Sdk\Internal\CouponsApi;
+use NotificationService\Sdk\Internal\CredentialsClient;
 use NotificationService\Sdk\Internal\EventsApi;
 use NotificationService\Sdk\Internal\LoyaltyApi;
 use NotificationService\Sdk\Internal\OrdersApi;
@@ -20,6 +18,10 @@ use NotificationService\Sdk\Internal\ReportsApi;
 use NotificationService\Sdk\Internal\ReviewsApi;
 use NotificationService\Sdk\Internal\SubscribersApi;
 use NotificationService\Sdk\Internal\TransactionalsApi;
+use TheMarketer\ApiClient\ApiGateway;
+use TheMarketer\ApiClient\Common\ApiContext;
+use TheMarketer\ApiClient\Common\Config;
+use TheMarketer\ApiClient\Exception\ValidationException;
 
 class Client
 {
@@ -47,59 +49,48 @@ class Client
 
     private CredentialsClient $credentials;
 
-    private readonly ClientInterface $httpClient;
-
-    private readonly string $domainKey;
-
-    private readonly string $domainApiKey;
-
-    private readonly string $trackingKey;
-
-    private readonly string $baseUrl;
+    private readonly ApiContext $context;
 
     /**
-     * @param  string  $customerId
-     * @param  string  $restKey
-     * @param  string  $apiKey
-     * @param  int  $maxRetryAttempts  Extra HTTP attempts after the first try for transient errors (connection, timeout, 502/503/504, etc.). 0 disables retries.
+     * @param string $customerId
+     * @param string $restKey
+     * @param int $maxRetryAttempts Extra HTTP attempts after the first try for transient errors (connection, timeout, 502/503/504, etc.). 0 disables retries.
      */
     public function __construct(
         string $customerId,
         string $restKey,
-        string $apiKey,
         int $maxRetryAttempts = 1,
-    ) {
-        $this->httpClient = new GuzzleClient([
-            'handler' => GuzzleRetryHandlerStackFactory::create(null, $maxRetryAttempts),
-        ]);
-        $this->domainKey = $customerId;
-        $this->domainApiKey = $restKey;
-        $this->trackingKey = $apiKey;
-        $this->baseUrl = HttpClient::DEFAULT_BASE_URL;
+    )
+    {
+        $config = new Config($customerId, $restKey);
+        $this->context = new ApiContext(new ApiGateway($config, $maxRetryAttempts), $config);
 
-        $this->subscribers = new SubscribersApi($this->domainKey, $this->domainApiKey, $this->httpClient, $this->baseUrl);
+        $this->subscribers = new SubscribersApi($this->context);
 
-        $this->orders = new OrdersApi($this->domainKey, $this->domainApiKey, $this->httpClient, $this->baseUrl);
-
-        $this->transactionals = new TransactionalsApi($this->domainKey, $this->domainApiKey, $this->httpClient, $this->baseUrl);
-
-        $this->products = new ProductsApi($this->domainKey, $this->domainApiKey, $this->httpClient, $this->baseUrl);
-
-        $this->campaigns = new CampaignsApi($this->domainKey, $this->domainApiKey, $this->httpClient, $this->baseUrl);
-
-        $this->loyalty = new LoyaltyApi($this->domainKey, $this->domainApiKey, $this->httpClient, $this->baseUrl);
-
-        $this->coupons = new CouponsApi($this->domainKey, $this->domainApiKey, $this->httpClient, $this->baseUrl);
-
-        $this->reviews = new ReviewsApi($this->domainKey, $this->domainApiKey, $this->httpClient, $this->baseUrl);
-
-        $this->appPush = new AppPushApi($this->domainKey, $this->domainApiKey, $this->httpClient, $this->baseUrl);
-
-        $this->events = new EventsApi($this->domainKey, $this->domainApiKey, $this->httpClient, $this->baseUrl);
-
-        $this->reports = new ReportsApi($this->domainKey, $this->domainApiKey, $this->httpClient, $this->baseUrl);
-
-        $this->credentials = new CredentialsClient($this->httpClient, $this->domainApiKey, $this->domainKey, $this->baseUrl, $this->trackingKey);
+//        $this->orders = new OrdersApi($this->http);
+//
+//        $this->transactionals = new TransactionalsApi($this->http);
+//
+//        $this->products = new ProductsApi($this->http);
+//
+//        $this->campaigns = new CampaignsApi($this->http);
+//
+//        $this->loyalty = new LoyaltyApi($this->http);
+//
+//        $this->coupons = new CouponsApi($this->http);
+//
+//        $this->reviews = new ReviewsApi($this->http);
+//
+//        $this->appPush = new AppPushApi($this->http);
+//
+//        $this->events = new EventsApi($this->http);
+//
+//        $this->reports = new ReportsApi($this->http);
+//
+//        $this->credentials = new CredentialsClient(
+//            $this->http,
+//            $this->trackingKey !== '' ? $this->trackingKey : null,
+//        );
     }
 
     public function subscribers(): SubscribersApi
@@ -157,9 +148,9 @@ class Client
         return $this->reports;
     }
 
-    public function trackingKey(): string
+    public function config(): Config
     {
-        return $this->trackingKey;
+        return $this->context->config;
     }
 
     /**
@@ -227,7 +218,7 @@ class Client
     }
 
     /**
-     * @param  array<string, mixed>  $payload
+     * @param array<string, mixed> $payload
      *
      * @throws \Illuminate\Validation\ValidationException
      * @throws GuzzleException

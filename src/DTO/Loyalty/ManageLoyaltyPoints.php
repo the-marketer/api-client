@@ -4,10 +4,8 @@ declare(strict_types=1);
 
 namespace TheMarketer\ApiClient\DTO\Loyalty;
 
-use Spatie\LaravelData\Attributes\Validation\Email;
-use Spatie\LaravelData\Attributes\Validation\Required;
-use Spatie\LaravelData\Attributes\Validation\Rule;
-use Spatie\LaravelData\Data;
+use Symfony\Component\Validator\Constraints as Assert;
+use TheMarketer\ApiClient\Common\Data;
 
 /**
  * Payload pentru {@see \NotificationService\Sdk\Internal\LoyaltyApi::managePoints()}.
@@ -15,14 +13,14 @@ use Spatie\LaravelData\Data;
 class ManageLoyaltyPoints extends Data
 {
     public function __construct(
-        #[Required]
-        #[Email]
+        #[Assert\NotBlank]
+        #[Assert\Email]
         public string $email,
-        #[Required]
-        #[Rule('in:increase,decrease')]
+        #[Assert\NotBlank]
+        #[Assert\Choice(['increase', 'decrease'])]
         public string $action,
-        #[Required]
-        #[Rule('integer', 'min:1')]
+        #[Assert\NotBlank]
+        #[Assert\Positive]
         public int $points,
     ) {
     }

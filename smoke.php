@@ -5,6 +5,7 @@ declare(strict_types=1);
 require __DIR__ . '/vendor/autoload.php';
 require_once __DIR__ . '/src/Api/SubscribersApi.php';
 
+use GuzzleHttp\Exception\GuzzleException;
 use TheMarketer\ApiClient\Client;
 use TheMarketer\ApiClient\Exception\ApiException;
 use TheMarketer\ApiClient\Exception\CustomerNotFoundException;
@@ -15,23 +16,25 @@ use TheMarketer\ApiClient\Exception\ValidationException;
 
 // REFEREE IQ
 $clientReferee = new Client(
-    customerId: '699c4b545a11c005db056fbe',
-    restKey: '9OQDWYSW',
-    apiKey: 'MKRMEPZY'
+    '62b969c6d0385a1b694ecfb9',
+    '457R4326'
 );
 
 try {
-    $data = $clientReferee->getCosts();
+    $data = $clientReferee->subscribers()->statusSubscriber('alexandru.clain@themarketer.com');
     var_dump($data);
 } catch (ValidationException $e) {
-    $code = $e->getHttpStatusCode(); 
+    $message = $e->getMessage();
 } catch (UnauthorizedException $e) {
-    $e->getMessage();
+    $message = $e->getMessage();
 } catch (CustomerNotFoundException $e) {
-    $e->getMessage();
+    $message = $e->getMessage();
 } catch (MethodNotAllowedException $e) {
-    $e->getMessage();
+    $message = $e->getMessage();
 } catch (ApiException $e) {
-    $status = $e->getHttpStatusCode();
-    $e->getMessage();
+    $message = $e->getMessage();
+} catch (GuzzleException $e) {
+    $message = $e->getMessage();
 }
+
+var_dump($message);

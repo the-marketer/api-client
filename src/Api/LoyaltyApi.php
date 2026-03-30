@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace NotificationService\Sdk\Internal;
 
-use GuzzleHttp\ClientInterface;
 use GuzzleHttp\Exception\GuzzleException;
 use JsonException;
 use TheMarketer\ApiClient\DTO\Loyalty\ManageLoyaltyPoints;
@@ -14,17 +13,13 @@ use TheMarketer\ApiClient\Exception\CustomerNotFoundException;
 use TheMarketer\ApiClient\Exception\MethodNotAllowedException;
 use TheMarketer\ApiClient\Exception\UnauthorizedException;
 use TheMarketer\ApiClient\Exception\ValidationException;
-use TheMarketer\ApiClient\HttpClient;
+use TheMarketer\ApiClient\ApiGateway;
 
-class LoyaltyApi extends HttpClient
+class LoyaltyApi
 {
     public function __construct(
-        ?string $domainKey,
-        ?string $domainApiKey,
-        ClientInterface $httpClient,
-        ?string $baseUrl = null
+        private readonly ApiGateway $api,
     ) {
-        parent::__construct($httpClient, $domainKey, $domainApiKey, $baseUrl);
     }
 
     /**
@@ -46,8 +41,8 @@ class LoyaltyApi extends HttpClient
             'email' => $email,
         ])->toArray();
 
-        $request = $this->getRequest('/loyalty_info', $query);
-        return $this->decodeJson($this->sendJson($request));
+        $request = $this->api->getRequest('/loyalty_info', $query);
+        return $this->api->decodeJson($this->api->sendJson($request));
     }
 
     /**
@@ -69,7 +64,7 @@ class LoyaltyApi extends HttpClient
             'points' => $points,
         ])->toArray();
 
-        $request = $this->postRequest('/manage_loyalty_points', $dto);
-        return $this->decodeJson($this->sendJson($request));
+        $request = $this->api->postRequest('/manage_loyalty_points', $dto);
+        return $this->api->decodeJson($this->api->sendJson($request));
     }
 }
