@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Tests;
 
-use Illuminate\Validation\ValidationException;
 use TheMarketer\ApiClient\DTO\Subscribers\DeleteSubscriber;
+use TheMarketer\ApiClient\Exception\ValidationException;
 
 final class DeleteSubscriberTest extends TestCase
 {

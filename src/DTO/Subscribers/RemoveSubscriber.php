@@ -4,17 +4,24 @@ declare(strict_types=1);
 
 namespace TheMarketer\ApiClient\DTO\Subscribers;
 
-use Spatie\LaravelData\Attributes\Validation\Email;
-use Spatie\LaravelData\Attributes\Validation\Required;
-use Spatie\LaravelData\Data;
+use Symfony\Component\Validator\Constraints as Assert;
+use TheMarketer\ApiClient\Common\AbstractPayload;
 
-class RemoveSubscriber extends Data
+class RemoveSubscriber extends AbstractPayload
 {
     public function __construct(
-        #[Required]
-        #[Email]
+        #[Assert\NotBlank]
+        #[Assert\Email]
         public string $email,
         public ?string $channels = null,
     ) {
+    }
+
+    public function toApiPayload(): array
+    {
+        return array_filter(
+            ['email' => $this->email, 'channels' => $this->channels],
+            static fn ($v) => $v !== null && $v !== '',
+        );
     }
 }

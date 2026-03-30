@@ -17,12 +17,13 @@ use TheMarketer\ApiClient\Exception\ValidationException;
 // REFEREE IQ
 $clientReferee = new Client(
     '62b969c6d0385a1b694ecfb9',
-    '457R4326'
+    '8784T542'
 );
 
 try {
     $data = $clientReferee->subscribers()->statusSubscriber('alexandru.clain@themarketer.com');
     var_dump($data);
+    exit();
 } catch (ValidationException $e) {
     $message = $e->getMessage();
 } catch (UnauthorizedException $e) {

@@ -123,7 +123,7 @@ final class SubscribersApiTest extends TestCase
 
         $result = $api->addSubscriber([
             'email' => 'user@example.com',
-            'add_tags' => 'tag1,tag2',
+            'addTags' => 'tag1,tag2',
             'firstname' => 'Jane',
             'lastname' => 'Doe',
             'phone' => '+40123456789',

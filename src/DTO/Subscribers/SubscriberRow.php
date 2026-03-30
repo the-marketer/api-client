@@ -4,16 +4,14 @@ declare(strict_types=1);
 
 namespace TheMarketer\ApiClient\DTO\Subscribers;
 
-use Spatie\LaravelData\Attributes\Validation\Email;
-use Spatie\LaravelData\Attributes\Validation\Required;
-use Spatie\LaravelData\Attributes\Validation\Rule;
+use Symfony\Component\Validator\Constraints as Assert;
 use TheMarketer\ApiClient\Common\AbstractPayload;
 
 class SubscriberRow extends AbstractPayload
 {
     public function __construct(
-        #[Required]
-        #[Email]
+        #[Assert\NotBlank]
+        #[Assert\Email]
         public string $email,
         public ?string $add_tags = null,
         public ?string $firstname = null,
@@ -23,25 +21,23 @@ class SubscriberRow extends AbstractPayload
         public ?string $country = null,
         public ?string $birthday = null,
         public ?string $channels = null,
-        #[Rule('nullable', 'array')]
         public ?array $attributes = null,
-    ) {
-    }
+    ) {}
 
-    public function toSubscribersApiPayload(): array
+    public function toApiPayload(): array
     {
         $body = ['email' => trim($this->email)];
 
         foreach ([
-            'firstname' => $this->firstname,
-            'lastname' => $this->lastname,
-            'add_tags' => $this->add_tags,
-            'phone' => $this->phone,
-            'city' => $this->city,
-            'country' => $this->country,
-            'birthday' => $this->birthday,
-            'channels' => $this->channels,
-        ] as $key => $value) {
+                     'firstname' => $this->firstname,
+                     'lastname' => $this->lastname,
+                     'add_tags' => $this->add_tags,
+                     'phone' => $this->phone,
+                     'city' => $this->city,
+                     'country' => $this->country,
+                     'birthday' => $this->birthday,
+                     'channels' => $this->channels,
+                 ] as $key => $value) {
             if ($value !== null && $value !== '') {
                 $body[$key] = $value;
             }

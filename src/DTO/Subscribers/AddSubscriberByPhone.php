@@ -4,20 +4,31 @@ declare(strict_types=1);
 
 namespace TheMarketer\ApiClient\DTO\Subscribers;
 
-use Spatie\LaravelData\Attributes\Validation\Required;
-use Spatie\LaravelData\Attributes\Validation\Rule;
-use Spatie\LaravelData\Data;
+use Symfony\Component\Validator\Constraints as Assert;
+use TheMarketer\ApiClient\Common\AbstractPayload;
 
-class AddSubscriberByPhone extends Data
+class AddSubscriberByPhone extends AbstractPayload
 {
     public function __construct(
-        #[Required]
-        #[Rule('string', 'filled')]
+        #[Assert\NotBlank]
         public string $phone,
-        #[Rule('sometimes', 'required')]
+        #[Assert\NotBlank(allowNull: true)]
         public ?string $firstname = null,
-        #[Rule('sometimes', 'required')]
+        #[Assert\NotBlank(allowNull: true)]
         public ?string $lastname = null,
-    ) {
+    ) {}
+
+    public function toApiPayload(): array
+    {
+        $body = ['phone' => $this->phone];
+        if ($this->firstname !== null && $this->firstname !== '') {
+            $body['firstname'] = $this->firstname;
+        }
+
+        if ($this->lastname !== null && $this->lastname !== '') {
+            $body['lastname'] = $this->lastname;
+        }
+
+        return $body;
     }
 }

@@ -7,6 +7,7 @@ namespace NotificationService\Sdk\Internal;
 use GuzzleHttp\Exception\GuzzleException;
 use JsonException;
 use TheMarketer\ApiClient\Common\ApiContext;
+use TheMarketer\ApiClient\Common\StringUtil;
 use TheMarketer\ApiClient\DTO\Subscribers\AddSubscriberBulk;
 use TheMarketer\ApiClient\DTO\Subscribers\AddSubscriberByPhone;
 use TheMarketer\ApiClient\DTO\Subscribers\DeleteSubscriber;
@@ -25,7 +26,7 @@ use TheMarketer\ApiClient\Exception\ValidationException;
 class SubscribersApi
 {
     public function __construct(
-        private readonly ApiContext $context
+        private readonly ApiContext $context,
     ) {}
 
     /**
@@ -41,9 +42,9 @@ class SubscribersApi
      */
     public function statusSubscriber(string $email): array
     {
-        $query = SubscriberEmail::validateAndCreate(['email' => $email])->toArray();
+        $dto = SubscriberEmail::validateAndCreate(['email' => $email]);
 
-        return $this->context->http->get('/status_subscriber', $query);
+        return $this->context->http->get('/status_subscriber', $dto->toApiPayload());
     }
 
     /**
@@ -55,14 +56,14 @@ class SubscribersApi
      * @throws JsonException
      * @throws GuzzleException
      */
-    public function unsubscribedEmails(string $date_from, string $date_to): array
+    public function unsubscribedEmails(string $dateFrom, string $dateTo): array
     {
-        $query = UnsubscribedEmails::validateAndCreate([
-            'date_from' => $date_from,
-            'date_to' => $date_to,
-        ])->toArray();
+        $dto = UnsubscribedEmails::validateAndCreate([
+            'date_from' => $dateFrom,
+            'date_to' => $dateTo,
+        ]);
 
-        return $this->context->http->get('/unsubscribed_emails', $query);
+        return $this->context->http->get('/unsubscribed_emails', $dto->toApiPayload());
     }
 
     /**
@@ -76,14 +77,14 @@ class SubscribersApi
      * @throws JsonException
      * @throws GuzzleException
      */
-    public function listUnsubscribed(?string $date_from = null, ?string $date_to = null): array
+    public function listUnsubscribed(?string $dateFrom = null, ?string $dateTo = null): array
     {
         $dto = ListSubscribersDateRange::validateAndCreate([
-            'date_from' => $date_from,
-            'date_to' => $date_to,
+            'date_from' => $dateFrom,
+            'date_to' => $dateTo,
         ]);
 
-        return $this->context->http->get('/unsubscribed_emails', $dto->toListSubscribersDataRangeApiPayload());
+        return $this->context->http->get('/unsubscribed_emails', $dto->toApiPayload());
     }
 
     /**
@@ -97,14 +98,14 @@ class SubscribersApi
      * @throws JsonException
      * @throws GuzzleException
      */
-    public function listSubscribed(?string $date_from = null, ?string $date_to = null): array
+    public function listSubscribed(?string $dateFrom = null, ?string $dateTo = null): array
     {
         $dto = ListSubscribersDateRange::validateAndCreate([
-            'date_from' => $date_from,
-            'date_to' => $date_to,
+            'date_from' => $dateFrom,
+            'date_to' => $dateTo,
         ]);
 
-        return $this->context->http->get('/subscribed_emails', $dto->toListSubscribersDataRangeApiPayload());
+        return $this->context->http->get('/subscribed_emails', $dto->toApiPayload());
     }
 
     /**
@@ -147,7 +148,7 @@ class SubscribersApi
     {
         $dto = SubscriberRow::validateAndCreate($payload);
 
-        return $this->context->http->post('/add_subscriber', $dto->toSubscribersApiPayload());
+        return $this->context->http->post('/add_subscriber', $dto->toApiPayload());
     }
 
     /**
@@ -165,21 +166,21 @@ class SubscribersApi
         ?string $lastname = null,
     ): array
     {
-        $payload = ['phone' => $phone];
-        if ($firstname !== null && $firstname !== '') {
-            $payload['firstname'] = $firstname;
-        }
-        if ($lastname !== null && $lastname !== '') {
-            $payload['lastname'] = $lastname;
-        }
+        $dto = AddSubscriberByPhone::validateAndCreate([
+            'phone' => $phone,
+            'firstname' => $firstname,
+            'lastname' => $lastname,
+        ]);
 
-        $dto = AddSubscriberByPhone::validateAndCreate($payload);
-
-        return $this->context->http->post('/add_subscriber_by_phone', array_replace($payload, ['phone' => $dto->phone]));
+        return $this->context->http->post(
+            '/add_subscriber_by_phone',
+            $dto->toApiPayload(),
+        );
     }
 
     /**
      * @param list<array<string, mixed>> $subscribers
+     *
      * @return array<string, mixed>
      *
      * @throws UnauthorizedException
@@ -194,16 +195,12 @@ class SubscribersApi
     {
         $dto = AddSubscriberBulk::validateAndCreate(['subscribers' => $subscribers]);
 
-        $payload = array_map(
-            fn(SubscriberRow $row): array => $row->toSubscribersApiPayload(),
-            $dto->subscribers,
-        );
-
-        return $this->context->http->post('/add_subscriber_bulk', $payload);
+        return $this->context->http->post('/add_subscriber_bulk', $dto->toApiPayload());
     }
 
     /**
      * @param array<string, mixed> $payload
+     *
      * @return array<string, mixed>
      *
      * @throws UnauthorizedException
@@ -218,11 +215,12 @@ class SubscribersApi
     {
         $dto = SubscriberRow::validateAndCreate($payload);
 
-        return $this->context->http->post('/add_subscriber_sync', $dto->toSubscribersApiPayload());
+        return $this->context->http->post('/add_subscriber_sync', $dto->toApiPayload());
     }
 
     /**
      * @param array<string, mixed> $payload `email` și/sau `phone`
+     *
      * @return array<string, mixed>
      *
      * @throws UnauthorizedException
@@ -235,19 +233,12 @@ class SubscribersApi
      */
     public function deleteSubscriber(array $payload): array
     {
-        $trim = static fn(mixed $v): mixed => is_string($v) ? trim($v) : $v;
-
         $dto = DeleteSubscriber::validateAndCreate([
-            'email' => array_key_exists('email', $payload) ? $trim($payload['email']) : null,
-            'phone' => array_key_exists('phone', $payload) ? $trim($payload['phone']) : null,
+            'email' => array_key_exists('email', $payload) ? StringUtil::trim($payload['email']) : null,
+            'phone' => array_key_exists('phone', $payload) ? StringUtil::trim($payload['phone']) : null,
         ]);
 
-        $body = array_filter(
-            ['email' => $dto->email, 'phone' => $dto->phone],
-            static fn($v) => $v !== null && $v !== '',
-        );
-
-        return $this->context->http->post('/delete_subscriber', $body);
+        return $this->context->http->post('/delete_subscriber', $dto->toApiPayload());
     }
 
     /**
@@ -268,12 +259,7 @@ class SubscribersApi
             'channels' => $channels,
         ]);
 
-        $query = array_filter(
-            ['email' => $dto->email, 'channels' => $dto->channels],
-            static fn($v) => $v !== null && $v !== '',
-        );
-
-        return $this->context->http->post('/remove_subscriber', [], $query, true);
+        return $this->context->http->post('/remove_subscriber', $dto->toApiPayload());
     }
 
     /**
@@ -282,14 +268,15 @@ class SubscribersApi
      */
     public function anonymizeEmail(string $email): array
     {
-        $body = SubscriberEmail::validateAndCreate(['email' => $email])->toArray();
+        $dto = SubscriberEmail::validateAndCreate(['email' => $email]);
 
-        return $this->context->http->post('/anonymize-email', $body);
+        return $this->context->http->post('/anonymize-email', $dto->toApiPayload());
     }
 
     /**
-     * @param list<string|int> $add_tags
-     * @param list<string|int> $remove_tags
+     * @param list<string|int> $addTags
+     * @param list<string|int> $removeTags
+     *
      * @return array<string, mixed>
      *
      * @throws UnauthorizedException
@@ -302,18 +289,18 @@ class SubscribersApi
      */
     public function updateTags(
         string $email,
-        array $add_tags = [],
-        array $remove_tags = [],
-        ?int $overwrite_existing = null,
+        array $addTags = [],
+        array $removeTags = [],
+        ?int $overwriteExisting = null,
     ): array
     {
         $dto = UpdateTags::validateAndCreate([
             'email' => $email,
-            'add_tags' => $add_tags,
-            'remove_tags' => $remove_tags,
-            'overwrite_existing' => $overwrite_existing,
+            'add_tags' => $addTags,
+            'remove_tags' => $removeTags,
+            'overwrite_existing' => $overwriteExisting,
         ]);
 
-        return $this->context->http->post('/update-tags', [], $dto->toApiPayload(), true);
+        return $this->context->http->post('/update-tags', $dto->toApiPayload());
     }
 }
