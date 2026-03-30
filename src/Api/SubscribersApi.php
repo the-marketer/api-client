@@ -6,7 +6,7 @@ namespace NotificationService\Sdk\Internal;
 
 use GuzzleHttp\Exception\GuzzleException;
 use JsonException;
-use TheMarketer\ApiClient\Common\ApiContext;
+use TheMarketer\ApiClient\Common\AbstractApi;
 use TheMarketer\ApiClient\Common\StringUtil;
 use TheMarketer\ApiClient\DTO\Subscribers\AddSubscriberBulk;
 use TheMarketer\ApiClient\DTO\Subscribers\AddSubscriberByPhone;
@@ -23,12 +23,8 @@ use TheMarketer\ApiClient\Exception\MethodNotAllowedException;
 use TheMarketer\ApiClient\Exception\UnauthorizedException;
 use TheMarketer\ApiClient\Exception\ValidationException;
 
-class SubscribersApi
+class SubscribersApi extends AbstractApi
 {
-    public function __construct(
-        private readonly ApiContext $context,
-    ) {}
-
     /**
      * @return array<string, mixed>
      *
@@ -125,10 +121,12 @@ class SubscribersApi
     }
 
     /**
-     * Alias pentru {@see addSubscriber()}.
+     * Alias for {@see addSubscriber()}.
      *
-     * @param array<string, mixed> $payload
-     * @return array<string, mixed>
+     * @param array $payload
+     * @return array
+     * @throws GuzzleException
+     * @throws JsonException
      */
     public function add(array $payload): array
     {
