@@ -4,76 +4,83 @@ declare(strict_types=1);
 
 namespace TheMarketer\ApiClient\DTO\Orders;
 
-use Spatie\LaravelData\Attributes\DataCollectionOf;
-use Spatie\LaravelData\Attributes\Validation\Email;
-use Spatie\LaravelData\Attributes\Validation\Required;
-use Spatie\LaravelData\Attributes\Validation\Rule;
+use ReflectionMethod;
+use ReflectionParameter;
+use Symfony\Component\Validator\Constraints as Assert;
 use TheMarketer\ApiClient\Common\AbstractPayload;
+use TheMarketer\ApiClient\Common\PayloadArrayNormalizer;
 
 class SaveOrder extends AbstractPayload
 {
     /**
-     * @param list<array<string, mixed>> $products
+     * @param list<SaveOrderProductLine> $products
      */
     public function __construct(
-        #[Required]
-        #[Rule('integer', 'filled')]
+        #[Assert\Positive]
+        #[Assert\Type('integer')]
         public int $number,
-        #[Required]
-        #[Email]
+        #[Assert\NotBlank]
+        #[Assert\Email]
         public string $email_address,
-        #[Required]
-        #[Rule('string', 'filled')]
+        #[Assert\NotBlank]
+        #[Assert\Type('string')]
         public string $phone,
-        #[Required]
-        #[Rule('string', 'filled')]
+        #[Assert\NotBlank]
+        #[Assert\Type('string')]
         public string $firstname,
-        #[Required]
-        #[Rule('string', 'filled')]
+        #[Assert\NotBlank]
+        #[Assert\Type('string')]
         public string $lastname,
-        #[Required]
-        #[Rule('string', 'filled')]
+        #[Assert\NotBlank]
+        #[Assert\Type('string')]
         public string $city,
-        #[Required]
-        #[Rule('string', 'filled')]
+        #[Assert\NotBlank]
+        #[Assert\Type('string')]
         public string $county,
-        #[Required]
-        #[Rule('string', 'filled')]
+        #[Assert\NotBlank]
+        #[Assert\Type('string')]
         public string $address,
-        #[Required]
-        #[Rule('integer', 'filled')]
-        public int $discount_value,
-        #[Required]
-        #[Rule('string', 'filled')]
+        #[Assert\PositiveOrZero]
+        #[Assert\Type('float')]
+        public float $discount_value,
+        #[Assert\NotBlank]
+        #[Assert\Type('string')]
         public string $discount_code,
-        #[Required]
-        #[Rule('numeric', 'filled')]
+        #[Assert\PositiveOrZero]
+        #[Assert\Type('float')]
         public float $shipping,
-        #[Required]
-        #[Rule('numeric', 'filled')]
+        #[Assert\PositiveOrZero]
+        #[Assert\Type('float')]
         public float $tax,
-        #[Required]
-        #[Rule('numeric', 'filled')]
+        #[Assert\PositiveOrZero]
+        #[Assert\Type('float')]
         public float $total_value,
-        #[Required]
-        #[DataCollectionOf(SaveOrderProductLine::class)]
-        #[Rule('array', 'min:1')]
+        #[Assert\Count(min: 1, minMessage: 'products must not be empty.')]
+        #[Assert\All([new Assert\Valid()])]
         public array $products,
     ) {
     }
 
-    public function toSaveOrderApiPayload(): array
+    public static function validateAndCreate(array $data): static
     {
-        $payload = $this->toArray();
-        if (isset($payload['email_address']) && is_string($payload['email_address'])) {
-            $payload['email_address'] = trim($payload['email_address']);
-        }
+        $data = PayloadArrayNormalizer::trimStringFields($data, ['email_address']);
+        $data = PayloadArrayNormalizer::coerceNumericStrings(
+            $data,
+            ['number'],
+            ['discount_value', 'shipping', 'tax', 'total_value'],
+        );
+        $data['products'] = array_map(
+            static fn(array $item): SaveOrderProductLine => SaveOrderProductLine::validateAndCreate($item),
+            $data['products'] ?? [],
+        );
 
-        return $payload;
-    }
+        $params = array_map(
+            static fn(ReflectionParameter $p): string => $p->getName(),
+            (new ReflectionMethod(static::class, '__construct'))->getParameters(),
+        );
+        $instance = new static(...array_intersect_key($data, array_flip($params)));
+        $instance->validate();
 
-    public function toApiPayload(): array
-    {
-        return $this->toSaveOrderApiPayload();
+        return $instance;
     }
 }

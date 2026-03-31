@@ -4,27 +4,29 @@ declare(strict_types=1);
 
 namespace TheMarketer\ApiClient\DTO\Orders;
 
-use Spatie\LaravelData\Attributes\Validation\IntegerType;
-use Spatie\LaravelData\Attributes\Validation\Numeric;
-use Spatie\LaravelData\Attributes\Validation\Required;
-use Spatie\LaravelData\Attributes\Validation\Rule;
-use Spatie\LaravelData\Data;
+use Symfony\Component\Validator\Constraints as Assert;
+use TheMarketer\ApiClient\Common\AbstractPayload;
+use TheMarketer\ApiClient\Common\PayloadArrayNormalizer;
 
-class SaveOrderProductLine extends Data
+class SaveOrderProductLine extends AbstractPayload
 {
     public function __construct(
-        #[Required]
-        #[IntegerType]
+        #[Assert\Positive]
         public int $product_id,
-        #[Required]
-        #[Numeric]
+        #[Assert\PositiveOrZero]
+        #[Assert\Type('float')]
         public float $price,
-        #[Required]
-        #[IntegerType]
+        #[Assert\Positive]
         public int $quantity,
-        #[Required]
-        #[Rule('string', 'filled')]
+        #[Assert\NotBlank]
+        #[Assert\Type('string')]
         public string $variation_sku,
-    ) {
+    ) {}
+
+    public static function validateAndCreate(array $data): static
+    {
+        $data = PayloadArrayNormalizer::coerceNumericStrings($data, ['product_id', 'quantity'], ['price']);
+
+        return parent::validateAndCreate($data);
     }
 }

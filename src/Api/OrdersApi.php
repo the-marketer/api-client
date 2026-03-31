@@ -3,21 +3,17 @@
 namespace NotificationService\Sdk\Internal;
 
 use GuzzleHttp\Exception\GuzzleException;
+use JsonException;
+use TheMarketer\ApiClient\Common\AbstractApi;
 use TheMarketer\ApiClient\DTO\Orders\SaveOrder;
 use TheMarketer\ApiClient\DTO\Orders\UpdateFeedUrl;
 use TheMarketer\ApiClient\DTO\Orders\UpdateOrderStatus;
-use TheMarketer\ApiClient\ApiGateway;
 
-class OrdersApi
+class OrdersApi extends AbstractApi
 {
-    public function __construct(
-        private readonly ApiGateway $api,
-    ) {
-    }
-
     /**
      * @throws GuzzleException
-     * @throws \JsonException
+     * @throws JsonException
      */
     public function updateOrderStatus(string $order_number, string $order_status): array
     {
@@ -32,12 +28,12 @@ class OrdersApi
 
     /**
      * @throws GuzzleException
-     * @throws \JsonException
+     * @throws JsonException
      */
     /**
      * Alias pentru {@see saveOrder()}.
      *
-     * @param  array<string, mixed>  $payload
+     * @param array<string, mixed> $payload
      *
      * @return array<string, mixed>
      */
@@ -46,19 +42,25 @@ class OrdersApi
         return $this->saveOrder($payload);
     }
 
+    /**
+     * @param array $payload
+     * @return array
+     * @throws GuzzleException
+     * @throws JsonException
+     */
     public function saveOrder(array $payload): array
     {
         $dto = SaveOrder::validateAndCreate($payload);
 
-        $request = $this->api->postRequest('/save_order', $dto->toApiPayload());
-        return $this->api->decodeJson($this->api->sendJson($request));
+        return $this->context->http->post('/save_order', $dto->toApiPayload());
     }
 
     /**
      * @throws GuzzleException
-     * @throws \JsonException
+     * @throws JsonException
      */
-    public function saveOrderRetail(array $payload): array {
+    public function saveOrderRetail(array $payload): array
+    {
         $dto = SaveOrder::validateAndCreate($payload);
 
         $request = $this->api->postRequest('/save_order_retail', $dto->toApiPayload());
@@ -69,7 +71,7 @@ class OrdersApi
      * @return array<string, mixed>
      *
      * @throws GuzzleException
-     * @throws \JsonException
+     * @throws JsonException
      */
     public function updateFeedUrl(string $url, ?string $type = null): array
     {
@@ -83,7 +85,7 @@ class OrdersApi
      * @return array<string, mixed>
      *
      * @throws GuzzleException
-     * @throws \JsonException
+     * @throws JsonException
      */
     public function updateOrderFeedUrl(string $url, ?string $type = null): array
     {
@@ -97,7 +99,7 @@ class OrdersApi
      * @return array<string, mixed>
      *
      * @throws GuzzleException
-     * @throws \JsonException
+     * @throws JsonException
      */
     public function getEcommerceStats(): array
     {
