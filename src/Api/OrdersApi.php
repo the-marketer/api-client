@@ -1,20 +1,19 @@
 <?php
 
+declare(strict_types=1);
+
 namespace NotificationService\Sdk\Internal;
 
 use GuzzleHttp\Exception\GuzzleException;
+use JsonException;
+use TheMarketer\ApiClient\Common\AbstractApi;
 use TheMarketer\ApiClient\DTO\Orders\SaveOrder;
 use TheMarketer\ApiClient\DTO\Orders\UpdateFeedUrl;
 use TheMarketer\ApiClient\DTO\Orders\UpdateOrderStatus;
-use TheMarketer\ApiClient\ApiGateway;
+use TheMarketer\ApiClient\Exception\ValidationException;
 
-class OrdersApi
+class OrdersApi extends AbstractApi
 {
-    public function __construct(
-        private readonly ApiGateway $api,
-    ) {
-    }
-
     /**
      * @throws GuzzleException
      * @throws \JsonException
@@ -24,34 +23,41 @@ class OrdersApi
         $dto = UpdateOrderStatus::validateAndCreate([
             'order_number' => $order_number,
             'order_status' => $order_status,
-        ])->toArray();
+        ]);
 
-        $request = $this->api->getRequest('/update_order_status', $dto);
-        return $this->api->decodeJson($this->api->sendJson($request));
+        return $this->context->http->get('/update_order_status', $dto->toApiPayload());
     }
 
-    /**
-     * @throws GuzzleException
-     * @throws \JsonException
-     */
     /**
      * Alias pentru {@see saveOrder()}.
      *
      * @param  array<string, mixed>  $payload
      *
      * @return array<string, mixed>
+     *
+     * @throws ValidationException
+     * @throws JsonException
+     * @throws GuzzleException
      */
     public function save(array $payload): array
     {
         return $this->saveOrder($payload);
     }
 
+    /**
+     * @param  array<string, mixed>  $payload
+     *
+     * @return array<string, mixed>
+     *
+     * @throws ValidationException
+     * @throws JsonException
+     * @throws GuzzleException
+     */
     public function saveOrder(array $payload): array
     {
         $dto = SaveOrder::validateAndCreate($payload);
 
-        $request = $this->api->postRequest('/save_order', $dto->toApiPayload());
-        return $this->api->decodeJson($this->api->sendJson($request));
+        return $this->context->http->post('/save_order', $dto->toApiPayload());
     }
 
     /**
@@ -61,8 +67,7 @@ class OrdersApi
     public function saveOrderRetail(array $payload): array {
         $dto = SaveOrder::validateAndCreate($payload);
 
-        $request = $this->api->postRequest('/save_order_retail', $dto->toApiPayload());
-        return $this->api->decodeJson($this->api->sendJson($request));
+        return $this->context->http->post('/save_order_retail', $dto->toApiPayload());
     }
 
     /**
@@ -73,10 +78,12 @@ class OrdersApi
      */
     public function updateFeedUrl(string $url, ?string $type = null): array
     {
-        $dto = UpdateFeedUrl::fromUrlAndOptionalType($url, $type);
+        $dto = UpdateFeedUrl::validateAndCreate([
+            'url' =>  $url,
+            'type' => $type
+        ]);
 
-        $request = $this->api->postRequest('/update_feed_url', $dto->toApiPayload());
-        return $this->api->decodeJson($this->api->sendJson($request));
+        return $this->context->http->post('/update_feed_url', $dto->toApiPayload());
     }
 
     /**
@@ -87,10 +94,12 @@ class OrdersApi
      */
     public function updateOrderFeedUrl(string $url, ?string $type = null): array
     {
-        $dto = UpdateFeedUrl::fromUrlAndOptionalType($url, $type);
+        $dto = UpdateFeedUrl::validateAndCreate([
+            'url' =>  $url,
+            'type' => $type
+        ]);
 
-        $request = $this->api->postRequest('/update_order_feed_url', $dto->toApiPayload());
-        return $this->api->decodeJson($this->api->sendJson($request));
+        return $this->context->http->post('/update_feed_url', $dto->toApiPayload());
     }
 
     /**
@@ -101,7 +110,6 @@ class OrdersApi
      */
     public function getEcommerceStats(): array
     {
-        $request = $this->api->getRequest('/get-ecommerce-stats');
-        return $this->api->decodeJson($this->api->sendJson($request));
+        return $this->context->http->get('/get-ecommerce-stats');
     }
 }

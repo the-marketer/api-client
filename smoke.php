@@ -21,7 +21,7 @@ $clientReferee = new Client(
 );
 
 try {
-    $data = $clientReferee->subscribers()->deleteSubscriber(['email' => 'radu.dalbea@themarketer.com', 'id' => 2]);
+    $data = $clientReferee->orders()->updateFeedUrl('https://www.google.com', 'product');
     var_dump($data);
     exit();
 } catch (Exception $e) {

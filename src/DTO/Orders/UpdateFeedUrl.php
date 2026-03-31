@@ -4,33 +4,20 @@ declare(strict_types=1);
 
 namespace TheMarketer\ApiClient\DTO\Orders;
 
-use Spatie\LaravelData\Attributes\Validation\Required;
-use Spatie\LaravelData\Attributes\Validation\Rule;
-use Spatie\LaravelData\Attributes\Validation\Sometimes;
-use Spatie\LaravelData\Data;
-use TheMarketer\ApiClient\Common\ApiPayloadInterface;
+use Symfony\Component\Validator\Constraints as Assert;
+use TheMarketer\ApiClient\Common\AbstractPayload;
 
-class UpdateFeedUrl extends Data implements ApiPayloadInterface
+class UpdateFeedUrl extends AbstractPayload
 {
     public function __construct(
-        #[Required]
-        #[Rule('url')]
+        #[Assert\NotBlank]
+        #[Assert\Url]
         public string $url,
-        #[Sometimes]
-        #[Rule('in:product,category,brand')]
+        #[Assert\NotBlank(allowNull: true)]
+        #[Assert\Choice(choices: ['product', 'category', 'brand'])]
         public ?string $type = null,
-    ) {
-    }
+    ) {}
 
-    public static function fromUrlAndOptionalType(string $url, ?string $type = null): self
-    {
-        $input = ['url' => $url];
-        if ($type !== null) {
-            $input['type'] = $type;
-        }
-
-        return self::validateAndCreate($input);
-    }
 
     /**
      * @return array<string, string>

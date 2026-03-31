@@ -101,10 +101,7 @@ class CreateProduct extends AbstractPayload
         ];
 
         if ($this->extra_attributes !== null) {
-            $extra = array_filter(
-                $this->extra_attributes->toArray(),
-                static fn(mixed $v): bool => $v !== null && $v !== ''
-            );
+            $extra = static::filterNonEmpty($this->extra_attributes->toArray());
             if ($extra !== []) {
                 $body['extra_attributes'] = $extra;
             }

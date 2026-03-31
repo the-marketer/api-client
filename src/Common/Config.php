@@ -14,7 +14,8 @@ class Config
     public function __construct(
         string $customerId,
         string $restKey,
-        string $apiUrl = 'https://t.themarketer.com',
+        // string $apiUrl = 'https://t.themarketer.com',
+        string $apiUrl = 'http://localhost:8080',
         string $apiVersion = 'v1',
     )
     {

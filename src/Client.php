@@ -67,7 +67,7 @@ class Client
 
         $this->subscribers = new SubscribersApi($this->context);
 
-//        $this->orders = new OrdersApi($this->http);
+       $this->orders = new OrdersApi($this->context);
 //
 //        $this->transactionals = new TransactionalsApi($this->http);
 //
