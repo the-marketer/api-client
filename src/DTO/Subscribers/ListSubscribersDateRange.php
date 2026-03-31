@@ -19,9 +19,6 @@ class ListSubscribersDateRange extends AbstractPayload
 
     public function toApiPayload(): array
     {
-        return array_filter(
-            ['date_from' => $this->date_from, 'date_to' => $this->date_to],
-            static fn($v) => $v !== null && $v !== '',
-        );
+        return self::filterNonEmpty(['date_from' => $this->date_from, 'date_to' => $this->date_to]);
     }
 }

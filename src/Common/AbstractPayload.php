@@ -10,4 +10,9 @@ abstract class AbstractPayload extends Data implements ApiPayloadInterface
     {
         return $this->toArray();
     }
+
+    protected static function filterNonEmpty(array $data): array
+    {
+        return array_filter($data, static fn($v) => $v !== null && $v !== '');
+    }
 }

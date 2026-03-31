@@ -19,9 +19,6 @@ class RemoveSubscriber extends AbstractPayload
 
     public function toApiPayload(): array
     {
-        return array_filter(
-            ['email' => $this->email, 'channels' => $this->channels],
-            static fn ($v) => $v !== null && $v !== '',
-        );
+        return self::filterNonEmpty(['email' => $this->email, 'channels' => $this->channels]);
     }
 }
