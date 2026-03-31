@@ -16,7 +16,8 @@ class Config
         string $restKey,
         string $apiUrl = 'https://t.themarketer.com',
         string $apiVersion = 'v1',
-    ) {
+    )
+    {
         $this->customerId = $customerId;
         $this->restKey = $restKey;
         $this->apiUrl = $apiUrl;
@@ -33,7 +34,7 @@ class Config
      */
     public function baseUrl(): string
     {
-        return rtrim($this->apiUrl, '/').'/api/'.$this->apiVersion;
+        return rtrim($this->apiUrl, '/') . '/api/' . $this->apiVersion;
     }
 
     public function apiVersion(): string
