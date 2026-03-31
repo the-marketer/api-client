@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace TheMarketer\ApiClient\Common;
 
+use ReflectionMethod;
+use ReflectionParameter;
 use Symfony\Component\Validator\Validation;
 use TheMarketer\ApiClient\Exception\ValidationException;
 
@@ -11,7 +13,11 @@ abstract class Data
 {
     public static function validateAndCreate(array $data): static
     {
-        $instance = new static(...$data);
+        $params = array_map(
+            fn(ReflectionParameter $p) => $p->getName(),
+            (new ReflectionMethod(static::class, '__construct'))->getParameters(),
+        );
+        $instance = new static(...array_intersect_key($data, array_flip($params)));
         $instance->validate();
 
         return $instance;

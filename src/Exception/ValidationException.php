@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace TheMarketer\ApiClient\Exception;
 
 use RuntimeException;
+use Throwable;
 
 /**
  * Thrown when required fields are missing or invalid before an HTTP request is sent.
@@ -15,13 +16,9 @@ class ValidationException extends RuntimeException
     public function __construct(
         string $message = '',
         int $code = 400,
-        ?\Throwable $previous = null,
-    ) {
-        parent::__construct($message, $code, $previous);
-    }
-
-    public function getHttpStatusCode(): int
+        ?Throwable $previous = null,
+    )
     {
-        return $this->code !== 0 ? $this->code : 400;
+        parent::__construct($message, $code, $previous);
     }
 }

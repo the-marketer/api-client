@@ -19,9 +19,4 @@ class ApiException extends RuntimeException
     ) {
         parent::__construct($message, $code, $previous);
     }
-
-    public function getHttpStatusCode(): int
-    {
-        return $this->code !== 0 ? $this->code : 500;
-    }
 }

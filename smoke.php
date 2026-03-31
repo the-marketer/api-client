@@ -21,21 +21,10 @@ $clientReferee = new Client(
 );
 
 try {
-    $data = $clientReferee->subscribers()->statusSubscriber('alexandru.clain@themarketer.com');
+    $data = $clientReferee->subscribers()->deleteSubscriber(['email' => 'radu.dalbea@themarketer.com', 'id' => 2]);
     var_dump($data);
     exit();
-} catch (ValidationException $e) {
-    $message = $e->getMessage();
-} catch (UnauthorizedException $e) {
-    $message = $e->getMessage();
-} catch (CustomerNotFoundException $e) {
-    $message = $e->getMessage();
-} catch (MethodNotAllowedException $e) {
-    $message = $e->getMessage();
-} catch (ApiException $e) {
-    $message = $e->getMessage();
-} catch (GuzzleException $e) {
-    $message = $e->getMessage();
+} catch (Exception $e) {
+    var_dump($e);
 }
 
-var_dump($message);

@@ -18,13 +18,13 @@ class DeleteSubscriber extends AbstractPayload
         #[Assert\Email]
         public ?string $email = null,
         public ?string $phone = null,
-    ) {}
+    ) {
+        $this->email = StringUtil::trim($email);
+        $this->phone = StringUtil::trim($phone);
+    }
 
     public function toApiPayload(): array
     {
-        return self::filterNonEmpty([
-            'email' => StringUtil::trim($this->email),
-            'phone' => StringUtil::trim($this->phone),
-        ]);
+        return self::filterNonEmpty(['email' => $this->email, 'phone' => $this->phone]);
     }
 }

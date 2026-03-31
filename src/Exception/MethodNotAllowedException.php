@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace TheMarketer\ApiClient\Exception;
 
 use RuntimeException;
+use Throwable;
 
 /**
  * Thrown when the API responds with HTTP 405 (wrong HTTP verb for the route).
@@ -12,15 +13,10 @@ use RuntimeException;
 class MethodNotAllowedException extends RuntimeException
 {
     public function __construct(
-        string $message = 'Method not allowed',
+        string $message = '',
         int $code = 405,
-        ?\Throwable $previous = null,
+        ?Throwable $previous = null,
     ) {
-        parent::__construct($message, $code, $previous);
-    }
-
-    public function getHttpStatusCode(): int
-    {
-        return 405;
+        parent::__construct($message !== '' ? $message : 'Method not allowed', $code, $previous);
     }
 }

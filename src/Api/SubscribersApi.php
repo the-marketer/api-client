@@ -7,7 +7,6 @@ namespace NotificationService\Sdk\Internal;
 use GuzzleHttp\Exception\GuzzleException;
 use JsonException;
 use TheMarketer\ApiClient\Common\AbstractApi;
-use TheMarketer\ApiClient\Common\StringUtil;
 use TheMarketer\ApiClient\DTO\Subscribers\AddSubscriberBulk;
 use TheMarketer\ApiClient\DTO\Subscribers\AddSubscriberByPhone;
 use TheMarketer\ApiClient\DTO\Subscribers\DeleteSubscriber;
@@ -231,10 +230,7 @@ class SubscribersApi extends AbstractApi
      */
     public function deleteSubscriber(array $payload): array
     {
-        $dto = DeleteSubscriber::validateAndCreate([
-            'email' => array_key_exists('email', $payload) ? StringUtil::trim($payload['email']) : null,
-            'phone' => array_key_exists('phone', $payload) ? StringUtil::trim($payload['phone']) : null,
-        ]);
+        $dto = DeleteSubscriber::validateAndCreate($payload);
 
         return $this->context->http->post('/delete_subscriber', $dto->toApiPayload());
     }

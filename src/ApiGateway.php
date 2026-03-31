@@ -203,8 +203,8 @@ final class ApiGateway
 
         try {
             $decoded = json_decode($body, true, 512, JSON_THROW_ON_ERROR);
-            if (is_array($decoded) && isset($decoded['message']) && is_string($decoded['message'])) {
-                return $decoded['message'];
+            if (is_array($decoded)) {
+                return is_string($decoded['message'] ?? null) ? $decoded['message'] : '';
             }
         } catch (JsonException) {
             // fall through

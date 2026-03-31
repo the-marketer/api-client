@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace TheMarketer\ApiClient\Exception;
 
 use RuntimeException;
+use Throwable;
 
 /**
  * Thrown when the API responds with 404 for a subscriber/customer lookup (e.g. status_subscriber).
@@ -12,15 +13,11 @@ use RuntimeException;
 class CustomerNotFoundException extends RuntimeException
 {
     public function __construct(
-        string $message = 'Customer not found',
+        string $message = '',
         int $code = 404,
-        ?\Throwable $previous = null,
-    ) {
-        parent::__construct($message, $code, $previous);
-    }
-
-    public function getHttpStatusCode(): int
+        ?Throwable $previous = null,
+    )
     {
-        return 404;
+        parent::__construct($message !== '' ? $message : 'Customer not found', $code, $previous);
     }
 }
