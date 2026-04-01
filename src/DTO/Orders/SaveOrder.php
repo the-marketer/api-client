@@ -4,118 +4,83 @@ declare(strict_types=1);
 
 namespace TheMarketer\ApiClient\DTO\Orders;
 
+use ReflectionMethod;
+use ReflectionParameter;
 use Symfony\Component\Validator\Constraints as Assert;
 use TheMarketer\ApiClient\Common\AbstractPayload;
+use TheMarketer\ApiClient\Common\PayloadArrayNormalizer;
 
 class SaveOrder extends AbstractPayload
 {
     /**
-     * @param  list<SaveOrderProductLine>  $products
+     * @param list<SaveOrderProductLine> $products
      */
     public function __construct(
-        #[Assert\NotBlank]
         #[Assert\Positive]
+        #[Assert\Type('integer')]
         public int $number,
         #[Assert\NotBlank]
         #[Assert\Email]
         public string $email_address,
         #[Assert\NotBlank]
+        #[Assert\Type('string')]
         public string $phone,
         #[Assert\NotBlank]
+        #[Assert\Type('string')]
         public string $firstname,
         #[Assert\NotBlank]
+        #[Assert\Type('string')]
         public string $lastname,
         #[Assert\NotBlank]
+        #[Assert\Type('string')]
         public string $city,
         #[Assert\NotBlank]
+        #[Assert\Type('string')]
         public string $county,
         #[Assert\NotBlank]
+        #[Assert\Type('string')]
         public string $address,
+        #[Assert\PositiveOrZero]
+        #[Assert\Type('float')]
+        public float $discount_value,
         #[Assert\NotBlank]
-        #[Assert\Type('int')]
-        public int $discount_value,
-        #[Assert\NotBlank]
+        #[Assert\Type('string')]
         public string $discount_code,
-        #[Assert\NotBlank]
+        #[Assert\PositiveOrZero]
         #[Assert\Type('float')]
         public float $shipping,
-        #[Assert\NotBlank]
+        #[Assert\PositiveOrZero]
         #[Assert\Type('float')]
         public float $tax,
-        #[Assert\NotBlank]
+        #[Assert\PositiveOrZero]
         #[Assert\Type('float')]
         public float $total_value,
         #[Assert\Count(min: 1, minMessage: 'products must not be empty.')]
-        #[Assert\Valid]
+        #[Assert\All([new Assert\Valid()])]
         public array $products,
-    ) {}
+    ) {
+    }
 
     public static function validateAndCreate(array $data): static
     {
-        if (isset($data['email_address']) && is_string($data['email_address'])) {
-            $data['email_address'] = trim($data['email_address']);
-        }
-        $rawProducts = $data['products'] ?? [];
-        if (!is_array($rawProducts)) {
-            $rawProducts = [];
-        }
-        $products = array_map(
-            static fn(array $item): SaveOrderProductLine => SaveOrderProductLine::validateAndCreate($item),
-            $rawProducts,
+        $data = PayloadArrayNormalizer::trimStringFields($data, ['email_address']);
+        $data = PayloadArrayNormalizer::coerceNumericStrings(
+            $data,
+            ['number'],
+            ['discount_value', 'shipping', 'tax', 'total_value'],
         );
-        $data['products'] = $products;
+        $data['products'] = array_map(
+            static fn(array $item): SaveOrderProductLine => SaveOrderProductLine::validateAndCreate($item),
+            $data['products'] ?? [],
+        );
 
-        $instance = new static(...$data);
+        $params = array_map(
+            static fn(ReflectionParameter $p): string => $p->getName(),
+            (new ReflectionMethod(static::class, '__construct'))->getParameters(),
+        );
+        $instance = new static(...array_intersect_key($data, array_flip($params)));
         $instance->validate();
 
         return $instance;
-    }
-
-    /**
-     * @param  array<string, mixed>  $data
-     * @return array<string, mixed>
-     */
-    private static function normalizeNumericScalars(array $data): array
-    {
-        foreach (['number', 'discount_value'] as $key) {
-            if (!array_key_exists($key, $data)) {
-                continue;
-            }
-            $v = $data[$key];
-            if (is_string($v) && is_numeric($v)) {
-                $data[$key] = (int) $v;
-            } elseif (is_float($v)) {
-                $data[$key] = (int) $v;
-            }
-        }
-        foreach (['shipping', 'tax', 'total_value'] as $key) {
-            if (!array_key_exists($key, $data)) {
-                continue;
-            }
-            $v = $data[$key];
-            if (is_string($v) && is_numeric($v)) {
-                $data[$key] = (float) $v;
-            } elseif (is_int($v)) {
-                $data[$key] = (float) $v;
-            }
-        }
-
-        return $data;
-    }
-
-    /**
-     * Corp JSON pentru {@see \NotificationService\Sdk\Internal\OrdersApi::saveOrder()} — aceleași chei ca input-ul API,
-     * cu `products` ca listă de array-uri (linii) și email tăiat la capete.
-     *
-     * @return array<string, mixed>
-     */
-    public function toApiPayload(): array
-    {
-        $payload = $this->toArray();
-        if (isset($payload['email_address']) && is_string($payload['email_address'])) {
-            $payload['email_address'] = trim($payload['email_address']);
-        }
-
-        return $payload;
     }
 }

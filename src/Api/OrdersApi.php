@@ -31,7 +31,7 @@ class OrdersApi extends AbstractApi
     /**
      * Alias pentru {@see saveOrder()}.
      *
-     * @param  array<string, mixed>  $payload
+     * @param array<string, mixed> $payload
      *
      * @return array<string, mixed>
      *
@@ -62,9 +62,10 @@ class OrdersApi extends AbstractApi
 
     /**
      * @throws GuzzleException
-     * @throws \JsonException
+     * @throws JsonException
      */
-    public function saveOrderRetail(array $payload): array {
+    public function saveOrderRetail(array $payload): array
+    {
         $dto = SaveOrder::validateAndCreate($payload);
 
         return $this->context->http->post('/save_order_retail', $dto->toApiPayload());
@@ -74,7 +75,7 @@ class OrdersApi extends AbstractApi
      * @return array<string, mixed>
      *
      * @throws GuzzleException
-     * @throws \JsonException
+     * @throws JsonException
      */
     public function updateFeedUrl(string $url, ?string $type = null): array
     {
@@ -90,7 +91,7 @@ class OrdersApi extends AbstractApi
      * @return array<string, mixed>
      *
      * @throws GuzzleException
-     * @throws \JsonException
+     * @throws JsonException
      */
     public function updateOrderFeedUrl(string $url, ?string $type = null): array
     {
@@ -106,7 +107,7 @@ class OrdersApi extends AbstractApi
      * @return array<string, mixed>
      *
      * @throws GuzzleException
-     * @throws \JsonException
+     * @throws JsonException
      */
     public function getEcommerceStats(): array
     {
