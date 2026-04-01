@@ -4,22 +4,20 @@ declare(strict_types=1);
 
 namespace TheMarketer\ApiClient\DTO\Campaigns;
 
-use Spatie\LaravelData\Attributes\Validation\Required;
-use Spatie\LaravelData\Attributes\Validation\Rule;
-use Spatie\LaravelData\Data;
+use Symfony\Component\Validator\Constraints as Assert;
+use TheMarketer\ApiClient\Common\AbstractPayload;
 
-class CreateCampaignSubject extends Data
+class CreateCampaignSubject extends AbstractPayload
 {
     public function __construct(
-        #[Required]
-        #[Rule('string')]
+        #[Assert\NotBlank]
+        #[Assert\Type('string')]
         public string $name,
-        #[Required]
-        #[Rule('string')]
+        #[Assert\NotBlank]
+        #[Assert\Type('string')]
         public string $subject_line,
-        #[Required]
-        #[Rule('string')]
+        #[Assert\NotBlank]
+        #[Assert\Type('string')]
         public string $preview_text,
-    ) {
-    }
+    ) {}
 }

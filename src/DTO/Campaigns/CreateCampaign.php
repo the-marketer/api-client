@@ -4,42 +4,56 @@ declare(strict_types=1);
 
 namespace TheMarketer\ApiClient\DTO\Campaigns;
 
-use Spatie\LaravelData\Attributes\Validation\Required;
-use Spatie\LaravelData\Attributes\Validation\Rule;
+use Symfony\Component\Validator\Constraints as Assert;
 use TheMarketer\ApiClient\Common\AbstractPayload;
+use TheMarketer\ApiClient\Exception\ValidationException;
 
-/**
- * Payload pentru {@see \NotificationService\Sdk\Internal\CampaignsApi::create()}.
- */
 class CreateCampaign extends AbstractPayload
 {
-    public function __construct(
-        #[Required]
-        #[Rule('in:sms,email,push')]
-        public string $type,
-        #[Required]
-        #[Rule('in:ecommerce,regular,plaintext')]
-        public string $mode,
-        #[Required]
-        public CreateCampaignSender $sender,
-        #[Required]
-        public CreateCampaignAudience $audience,
-        #[Required]
-        public CreateCampaignSubject $subject,
-        #[Required]
-        public CreateCampaignContent $content,
-        #[Required]
-        public CreateCampaignScheduling $scheduling,
-        #[Required]
-        public CreateCampaignTracking $tracking,
-    ) {
-    }
+    /** @var array<string, class-string<AbstractPayload>> */
+    private const NESTED = [
+        'sender' => CreateCampaignSender::class,
+        'audience' => CreateCampaignAudience::class,
+        'subject' => CreateCampaignSubject::class,
+        'content' => CreateCampaignContent::class,
+        'scheduling' => CreateCampaignScheduling::class,
+        'tracking' => CreateCampaignTracking::class,
+    ];
 
-    /**
-     * @return array<string, mixed>
-     */
-    public function toCampaignsApiPayload(): array
+    public function __construct(
+        #[Assert\NotBlank]
+        #[Assert\Choice(choices: ['sms', 'email', 'push'])]
+        public string $type,
+        #[Assert\NotBlank]
+        #[Assert\Choice(choices: ['ecommerce', 'regular', 'plaintext'])]
+        public string $mode,
+        #[Assert\Valid]
+        public CreateCampaignSender $sender,
+        #[Assert\Valid]
+        public CreateCampaignAudience $audience,
+        #[Assert\Valid]
+        public CreateCampaignSubject $subject,
+        #[Assert\Valid]
+        public CreateCampaignContent $content,
+        #[Assert\Valid]
+        public CreateCampaignScheduling $scheduling,
+        #[Assert\Valid]
+        public CreateCampaignTracking $tracking,
+    ) {}
+
+    public static function validateAndCreate(array $data): static
     {
-        return $this->toApiPayload();
+        foreach (self::NESTED as $key => $class) {
+            $nested = $data[$key] ?? [];
+            if (!is_array($nested)) {
+                throw new ValidationException(sprintf('%s must be an array.', $key));
+            }
+            $data[$key] = $class::validateAndCreate($nested);
+        }
+
+        $instance = new static(...$data);
+        $instance->validate();
+
+        return $instance;
     }
 }

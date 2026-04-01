@@ -6,9 +6,11 @@ namespace NotificationService\Sdk\Internal;
 
 use GuzzleHttp\Exception\GuzzleException;
 use JsonException;
+use TheMarketer\ApiClient\Common\AbstractApi;
 use TheMarketer\ApiClient\DTO\Campaigns\CampaignId;
 use TheMarketer\ApiClient\DTO\Campaigns\CreateCampaign;
 use TheMarketer\ApiClient\DTO\Campaigns\GetLatestCampaignQuery;
+use TheMarketer\ApiClient\DTO\Campaigns\ListCampaign;
 use TheMarketer\ApiClient\Exception\ApiException;
 use TheMarketer\ApiClient\Exception\CustomerNotFoundException;
 use TheMarketer\ApiClient\Exception\MethodNotAllowedException;
@@ -16,14 +18,10 @@ use TheMarketer\ApiClient\Exception\UnauthorizedException;
 use TheMarketer\ApiClient\Exception\ValidationException;
 use TheMarketer\ApiClient\ApiGateway;
 
-class CampaignsApi
+class CampaignsApi extends AbstractApi
 {
     private const CAMPAIGNS_ENDPOINT = '/campaigns';
 
-    public function __construct(
-        private readonly ApiGateway $api,
-    ) {
-    }
 
     /**
      * @return array<string, mixed>
@@ -36,10 +34,11 @@ class CampaignsApi
      * @throws JsonException
      * @throws GuzzleException
      */
-    public function list(): array
+    public function list(array $payload = []): array
     {
-        $request = $this->api->getRequest(self::CAMPAIGNS_ENDPOINT . '/list');
-        return $this->api->decodeJson($this->api->sendJson($request));
+        $dto = ListCampaign::validateAndCreate($payload ?? []);
+
+        return $this->context->http->post(self::CAMPAIGNS_ENDPOINT . '/list', $dto->toApiPayload());
     }
 
     /**
@@ -55,14 +54,9 @@ class CampaignsApi
      */
     public function create(array $payload): array
     {
-        try {
-            $dto = CreateCampaign::validateAndCreate($payload);
+        $dto = CreateCampaign::validateAndCreate($payload);
 
-            $request = $this->api->postRequest(self::CAMPAIGNS_ENDPOINT . '/create', $dto->toCampaignsApiPayload());
-            return $this->api->decodeJson($this->api->sendJson($request));
-        } catch (\InvalidArgumentException $e) {
-            throw new ValidationException($e->getMessage(), 422);
-        }
+        return $this->context->http->post(self::CAMPAIGNS_ENDPOINT . '/create', $dto->toApiPayload());
     }
 
     /**
@@ -76,16 +70,11 @@ class CampaignsApi
      * @throws JsonException
      * @throws GuzzleException
      */
-    public function getEmailReport(string|int $id): array
+    public function getEmailReport(string $id): array
     {
-        $dto = CampaignId::validateAndCreate([
-            'id' => is_int($id) ? (string) $id : $id,
-        ]);
+        $dto = CampaignId::validateAndCreate(['id' => $id]);
 
-        $path = sprintf('/%s/email/get-report', rawurlencode($dto->id));
-
-        $request = $this->api->getRequest(self::CAMPAIGNS_ENDPOINT . $path);
-        return $this->api->decodeJson($this->api->sendJson($request));
+        return $this->context->http->get(self::CAMPAIGNS_ENDPOINT . '/' . $dto->id . '/email/get-report');
     }
 
     /**
@@ -101,13 +90,8 @@ class CampaignsApi
      */
     public function getLatestCampaign(?int $limit = null): array
     {
-        $query = [];
-        if ($limit !== null) {
-            $dto = GetLatestCampaignQuery::validateAndCreate(['limit' => $limit]);
-            $query['limit'] = $dto->limit;
-        }
+        $dto = GetLatestCampaignQuery::validateAndCreate(['limit' => $limit]);
 
-        $request = $this->api->getRequest('/get-latest-campaign', $query);
-        return $this->api->decodeJson($this->api->sendJson($request));
+        return $this->context->http->get('/get-latest-campaign', $dto->toApiPayload());
     }
 }

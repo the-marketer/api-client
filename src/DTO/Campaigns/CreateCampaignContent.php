@@ -4,19 +4,14 @@ declare(strict_types=1);
 
 namespace TheMarketer\ApiClient\DTO\Campaigns;
 
-use Spatie\LaravelData\Attributes\Validation\Required;
-use Spatie\LaravelData\Attributes\Validation\Rule;
-use Spatie\LaravelData\Data;
+use Symfony\Component\Validator\Constraints as Assert;
+use TheMarketer\ApiClient\Common\AbstractPayload;
 
-class CreateCampaignContent extends Data
+class CreateCampaignContent extends AbstractPayload
 {
-    /** 500 KiB — aliniat cu backend `max:500*1024`. */
-    public const HTML_MAX_LENGTH = 512000;
-
     public function __construct(
-        #[Required]
-        #[Rule('string', 'max:512000')]
+        #[Assert\NotBlank]
+        #[Assert\Length(max: (500 * 1024))]
         public string $html,
-    ) {
-    }
+    ) {}
 }

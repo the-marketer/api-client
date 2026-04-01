@@ -4,19 +4,13 @@ declare(strict_types=1);
 
 namespace TheMarketer\ApiClient\DTO\Campaigns;
 
-use Spatie\LaravelData\Attributes\Validation\Rule;
-use Spatie\LaravelData\Attributes\Validation\Sometimes;
-use Spatie\LaravelData\Data;
+use Symfony\Component\Validator\Constraints as Assert;
+use TheMarketer\ApiClient\Common\AbstractPayload;
 
-/**
- * Query opțional pentru {@see \NotificationService\Sdk\Internal\CampaignsApi::getLatestCampaign()}.
- */
-class GetLatestCampaignQuery extends Data
+class GetLatestCampaignQuery extends AbstractPayload
 {
     public function __construct(
-        #[Sometimes]
-        #[Rule('nullable', 'integer', 'min:1')]
+        #[Assert\Positive]
         public ?int $limit = null,
-    ) {
-    }
+    ) {}
 }

@@ -73,7 +73,7 @@ class Client
 //
 //        $this->products = new ProductsApi($this->http);
 //
-//        $this->campaigns = new CampaignsApi($this->http);
+        $this->campaigns = new CampaignsApi($this->context);
 //
 //        $this->loyalty = new LoyaltyApi($this->http);
 //

@@ -4,23 +4,20 @@ declare(strict_types=1);
 
 namespace TheMarketer\ApiClient\DTO\Campaigns;
 
-use Spatie\LaravelData\Attributes\Validation\Email;
-use Spatie\LaravelData\Attributes\Validation\Required;
-use Spatie\LaravelData\Attributes\Validation\Rule;
-use Spatie\LaravelData\Data;
+use Symfony\Component\Validator\Constraints as Assert;
+use TheMarketer\ApiClient\Common\AbstractPayload;
 
-class CreateCampaignSender extends Data
+class CreateCampaignSender extends AbstractPayload
 {
     public function __construct(
-        #[Required]
-        #[Rule('string')]
+        #[Assert\NotBlank]
+        #[Assert\Type('string')]
         public string $sender_name,
-        #[Required]
-        #[Email]
+        #[Assert\NotBlank]
+        #[Assert\Email]
         public string $sender_email,
-        #[Required]
-        #[Email]
+        #[Assert\NotBlank]
+        #[Assert\Email]
         public string $reply_to,
-    ) {
-    }
+    ) {}
 }

@@ -16,15 +16,16 @@ use TheMarketer\ApiClient\Exception\ValidationException;
 
 // REFEREE IQ
 $clientReferee = new Client(
-    '62b969c6d0385a1b694ecfb9',
-    '8784T542'
+    '699c4b545a11c005db056fbe',
+    '9OQDWYSW'
 );
 
 try {
-    $data = $clientReferee->orders()->updateFeedUrl('https://www.google.com', 'product');
+
+    $data = $clientReferee->campaigns()->getLatestCampaign();
     var_dump($data);
     exit();
-} catch (Exception $e) {
+} catch (Exception|GuzzleException $e) {
     var_dump($e);
 }
 
