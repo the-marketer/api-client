@@ -9,6 +9,7 @@ use GuzzleHttp\Exception\GuzzleException;
 use GuzzleHttp\Handler\MockHandler;
 use GuzzleHttp\HandlerStack;
 use GuzzleHttp\Psr7\Response;
+use JsonException;
 use NotificationService\Sdk\Internal\SubscribersApi;
 use TheMarketer\ApiClient\ApiGateway;
 use TheMarketer\ApiClient\Common\ApiContext;
@@ -27,7 +28,7 @@ final class SubscribersApiTest extends TestCase
 
     /**
      * @throws GuzzleException
-     * @throws \JsonException
+     * @throws JsonException
      */
     public function testStatusSubscriberSendsGetWithEmailAndAuthQuery(): void
     {
@@ -51,7 +52,7 @@ final class SubscribersApiTest extends TestCase
 
     /**
      * @throws GuzzleException
-     * @throws \JsonException
+     * @throws JsonException
      */
     public function testUnsubscribedEmailsSendsGetWithDateRangeAndAuthQuery(): void
     {
@@ -76,7 +77,7 @@ final class SubscribersApiTest extends TestCase
 
     /**
      * @throws GuzzleException
-     * @throws \JsonException
+     * @throws JsonException
      */
     public function testAddSubscriberSendsPostJsonWithEmailAndOptionalFields(): void
     {
@@ -124,7 +125,7 @@ final class SubscribersApiTest extends TestCase
 
     /**
      * @throws GuzzleException
-     * @throws \JsonException
+     * @throws JsonException
      */
     public function testAddSubscriberSendsPostJsonWithEmailOnlyWhenOptionalsOmitted(): void
     {
@@ -194,7 +195,7 @@ final class SubscribersApiTest extends TestCase
 
     /**
      * @throws GuzzleException
-     * @throws \JsonException
+     * @throws JsonException
      */
     public function testAddSubscriberBulkThrowsWhenRowIsNotArray(): void
     {
@@ -202,10 +203,15 @@ final class SubscribersApiTest extends TestCase
 
         $this->expectException(\TypeError::class);
 
+        /** @noinspection PhpParamsInspection */
         /** @phpstan-ignore-next-line */
         $api->addSubscriberBulk(['not-an-array']);
     }
 
+    /**
+     * @throws GuzzleException
+     * @throws JsonException
+     */
     public function testAddSubscriberBulkThrowsWhenAttributesIsNotArray(): void
     {
         [$api] = $this->apiWithMockResponses();
@@ -315,7 +321,7 @@ final class SubscribersApiTest extends TestCase
 
     /**
      * @throws GuzzleException
-     * @throws \JsonException
+     * @throws JsonException
      */
     public function testListUnsubscribedSendsGetWithoutDateParamsWhenBothNull(): void
     {
@@ -340,7 +346,7 @@ final class SubscribersApiTest extends TestCase
 
     /**
      * @throws GuzzleException
-     * @throws \JsonException
+     * @throws JsonException
      */
     public function testListUnsubscribedSendsGetWithDateRange(): void
     {
@@ -358,7 +364,7 @@ final class SubscribersApiTest extends TestCase
 
     /**
      * @throws GuzzleException
-     * @throws \JsonException
+     * @throws JsonException
      */
     public function testListSubscribedSendsGetWithOptionalQuery(): void
     {
@@ -381,7 +387,7 @@ final class SubscribersApiTest extends TestCase
 
     /**
      * @throws GuzzleException
-     * @throws \JsonException
+     * @throws JsonException
      */
     public function testSubscribersEvolutionSendsGet(): void
     {
@@ -404,7 +410,7 @@ final class SubscribersApiTest extends TestCase
 
     /**
      * @throws GuzzleException
-     * @throws \JsonException
+     * @throws JsonException
      */
     public function testAddSubscriberSyncSendsPostToAddSubscriberSyncPath(): void
     {
@@ -534,7 +540,7 @@ final class SubscribersApiTest extends TestCase
 
     /**
      * @throws GuzzleException
-     * @throws \JsonException
+     * @throws JsonException
      */
     public function testAddDelegatesToAddSubscriber(): void
     {
