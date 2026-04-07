@@ -2,6 +2,33 @@
 
 Client PHP pentru API-ul **The Marketer**. Trimite cereri HTTP prin **Guzzle** (clasa internă `ApiGateway`) și validează payload-urile cu **Symfony Validator** (DTO-uri `AbstractPayload` / `Data` din `TheMarketer\ApiClient\Common`).
 
+## Documentatie pentru clienti
+
+Pentru o varianta structurata, usor de parcurs:
+
+- [Documentation index](./docs/README.md)
+- [Overview](./docs/overview.md)
+- [Quickstart](./docs/quickstart.md)
+- [Authentication](./docs/authentication.md)
+- [Orders](./docs/orders.md)
+- [Errors and Troubleshooting](./docs/errors.md)
+
+### Docusaurus site (GitHub Pages)
+
+Documentatia este pregatita si ca site Docusaurus in folderul `website/`.
+
+Rulare locala:
+
+```bash
+cd website
+npm install
+npm run start
+```
+
+Deploy pe GitHub Pages este configurat prin workflow-ul:
+
+- `.github/workflows/deploy-docs.yml`
+
 ## Cerințe (requirements)
 
 | Cerință | Versiune / notă |
