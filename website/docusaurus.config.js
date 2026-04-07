@@ -40,7 +40,7 @@ const config = {
         docs: {
           sidebarPath: require.resolve('./sidebars.js'),
           editUrl:
-            'https://github.com/radudalbea/api-client/tree/main/website/',
+            'https://github.com/the-marketer/api-client/tree/main/website/',
         },
         blog: false,
         theme: {
@@ -58,7 +58,7 @@ const config = {
         title: 'API Client Docs',
         logo: {
           alt: 'The Marketer Logo',
-          src: 'img/logo.svg',
+          src: 'img/logo-partial.svg',
         },
         items: [
           {
@@ -68,7 +68,7 @@ const config = {
             label: 'Documentation',
           },
           {
-            href: 'https://github.com/radudalbea/api-client',
+            href: 'https://github.com/the-marketer/api-client',
             label: 'GitHub',
             position: 'right',
           },
@@ -91,7 +91,7 @@ const config = {
             items: [
               {
                 label: 'GitHub',
-                href: 'https://github.com/radudalbea/api-client',
+                href: 'https://github.com/the-marketer/api-client',
               },
             ],
           },

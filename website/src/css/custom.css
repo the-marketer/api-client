@@ -6,25 +6,63 @@
 
 /* You can override the default Infima variables here. */
 :root {
-  --ifm-color-primary: #2e8555;
-  --ifm-color-primary-dark: #29784c;
-  --ifm-color-primary-darker: #277148;
-  --ifm-color-primary-darkest: #205d3b;
-  --ifm-color-primary-light: #33925d;
-  --ifm-color-primary-lighter: #359962;
-  --ifm-color-primary-lightest: #3cad6e;
+  --ifm-color-primary: #2259fa;
+  --ifm-color-primary-dark: #0542f2;
+  --ifm-color-primary-darker: #043fe8;
+  --ifm-color-primary-darkest: #0334bf;
+  --ifm-color-primary-light: #3f72fb;
+  --ifm-color-primary-lighter: #4e7dfb;
+  --ifm-color-primary-lightest: #7aa0fc;
+  --ifm-background-color: #f7fbff;
+  --ifm-navbar-background-color: #ffffff;
+  --ifm-footer-background-color: #0f172a;
   --ifm-code-font-size: 95%;
   --docusaurus-highlighted-code-line-bg: rgba(0, 0, 0, 0.1);
 }
 
 /* For readability concerns, you should choose a lighter palette in dark mode. */
 [data-theme='dark'] {
-  --ifm-color-primary: #25c2a0;
-  --ifm-color-primary-dark: #21af90;
-  --ifm-color-primary-darker: #1fa588;
-  --ifm-color-primary-darkest: #1a8870;
-  --ifm-color-primary-light: #29d5b0;
-  --ifm-color-primary-lighter: #32d8b4;
-  --ifm-color-primary-lightest: #4fddbf;
+  --ifm-color-primary: #4e7dfb;
+  --ifm-color-primary-dark: #3267fb;
+  --ifm-color-primary-darker: #245efa;
+  --ifm-color-primary-darkest: #0542f2;
+  --ifm-color-primary-light: #6a93fc;
+  --ifm-color-primary-lighter: #78a0fc;
+  --ifm-color-primary-lightest: #a5befd;
+  --ifm-background-color: #020817;
   --docusaurus-highlighted-code-line-bg: rgba(0, 0, 0, 0.3);
+}
+
+.navbar {
+  border-bottom: 1px solid rgba(15, 23, 42, 0.08);
+}
+
+.button.button--secondary {
+  background: #ffffff;
+  border: 1px solid #dbeafe;
+  color: #0f172a;
+}
+
+.button.button--secondary:hover {
+  border-color: #2259fa;
+  color: #1d4ed8;
+}
+
+.mkt-button-simple {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: fit-content;
+  border: none;
+  background: transparent;
+  color: #2259fa;
+  text-decoration: none;
+  cursor: pointer;
+  font-weight: 500;
+  font-size: 20px;
+}
+
+.mkt-button-simple:hover {
+  color: #1d4ed8;
+  text-decoration: none;
 }
