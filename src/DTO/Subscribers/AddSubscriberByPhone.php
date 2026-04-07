@@ -20,15 +20,12 @@ class AddSubscriberByPhone extends AbstractPayload
 
     public function toApiPayload(): array
     {
-        $body = ['phone' => $this->phone];
-        if ($this->firstname !== null && $this->firstname !== '') {
-            $body['firstname'] = $this->firstname;
-        }
-
-        if ($this->lastname !== null && $this->lastname !== '') {
-            $body['lastname'] = $this->lastname;
-        }
-
-        return $body;
+        return array_merge(
+            ['phone' => $this->phone],
+            static::filterNonEmpty([
+                'firstname' => $this->firstname,
+                'lastname' => $this->lastname,
+            ]),
+        );
     }
 }

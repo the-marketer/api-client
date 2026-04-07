@@ -1,0 +1,9 @@
+---
+description: Folosește filterNonEmpty pentru filtrarea array-urilor de payload
+globs: src/**/*.php
+alwaysApply: false
+---
+
+Când trebuie să elimini dintr-un array valorile `null` și stringurile goale (`''`), nu duplica `array_filter` cu closure propriu: folosește `static::filterNonEmpty($data)` din `TheMarketer\ApiClient\Common\AbstractPayload` (metodă `protected static`).
+
+Excepție: dacă semantica e diferită (ex. vrei și `trim`, eliminare array-uri goale `[]`, etc.), documentează explicit de ce nu se folosește `filterNonEmpty`.

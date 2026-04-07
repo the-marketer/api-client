@@ -2,28 +2,22 @@
 
 declare(strict_types=1);
 
-namespace TheMarketer\ApiClient\DTO\Products;
+namespace TheMarketer\ApiClient\DTO\Credentials;
 
 use Symfony\Component\Validator\Constraints as Assert;
 use TheMarketer\ApiClient\Common\AbstractPayload;
 
-class SyncCategory extends AbstractPayload
+class CheckCredentials extends AbstractPayload
 {
     public function __construct(
         #[Assert\NotBlank]
         #[Assert\Type('string')]
-        public string $id,
+        public string $k,
         #[Assert\NotBlank]
         #[Assert\Type('string')]
-        public string $name,
+        public string $r,
         #[Assert\NotBlank]
         #[Assert\Type('string')]
-        public string $hierarchy,
-        #[Assert\NotBlank]
-        #[Assert\Type('string')]
-        public string $url,
-        #[Assert\NotBlank]
-        #[Assert\Type('string')]
-        public string $image_url,
+        public string $u,
     ) {}
 }

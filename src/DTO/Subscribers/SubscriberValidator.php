@@ -7,7 +7,7 @@ namespace TheMarketer\ApiClient\DTO\Subscribers;
 use Symfony\Component\Validator\Constraints as Assert;
 use TheMarketer\ApiClient\Common\AbstractPayload;
 
-class SubscriberRow extends AbstractPayload
+class SubscriberValidator extends AbstractPayload
 {
     public function __construct(
         #[Assert\NotBlank]
@@ -26,22 +26,19 @@ class SubscriberRow extends AbstractPayload
 
     public function toApiPayload(): array
     {
-        $body = ['email' => trim($this->email)];
-
-        foreach ([
-                     'firstname' => $this->firstname,
-                     'lastname' => $this->lastname,
-                     'add_tags' => $this->add_tags,
-                     'phone' => $this->phone,
-                     'city' => $this->city,
-                     'country' => $this->country,
-                     'birthday' => $this->birthday,
-                     'channels' => $this->channels,
-                 ] as $key => $value) {
-            if ($value !== null && $value !== '') {
-                $body[$key] = $value;
-            }
-        }
+        $body = array_merge(
+            ['email' => trim($this->email)],
+            static::filterNonEmpty([
+                'firstname' => $this->firstname,
+                'lastname' => $this->lastname,
+                'add_tags' => $this->add_tags,
+                'phone' => $this->phone,
+                'city' => $this->city,
+                'country' => $this->country,
+                'birthday' => $this->birthday,
+                'channels' => $this->channels,
+            ]),
+        );
 
         if ($this->attributes !== null && $this->attributes !== []) {
             $body['attributes'] = $this->attributes;

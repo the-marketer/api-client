@@ -1,365 +1,155 @@
 # The Marketer API Client (PHP)
 
-Client PHP pentru API-ul The Marketer. Folosește [Guzzle](https://docs.guzzlephp.org/) pentru HTTP și [Spatie Laravel Data](https://spatie.be/docs/laravel-data) pentru validarea payload-urilor.
+Client PHP pentru API-ul **The Marketer**. Trimite cereri HTTP prin **Guzzle** (clasa internă `ApiGateway`) și validează payload-urile cu **Symfony Validator** (DTO-uri `AbstractPayload` / `Data` din `TheMarketer\ApiClient\Common`).
 
-## Instalare
+## Cerințe (requirements)
 
-```bash
-composer require themarketer/api-client
-```
+| Cerință | Versiune / notă |
+|--------|------------------|
+| **PHP** | `^8.1` |
+| **Composer** | pentru instalarea dependențelor |
+| **ext-mbstring** | obligatoriu |
+| **Dependențe principale** | `guzzlehttp/guzzle` ^7, `symfony/validator` ^7, `symfony/expression-language` ^8 |
+| **Dezvoltare / teste** | `phpunit` ^10, `orchestra/testbench` ^8 (pentru suite-ul de teste) |
 
-În proiectul curent:
+Instalare în proiect:
 
 ```bash
 composer install
 ```
 
-## Utilizare
+Pachet public (exemplu):
 
-Nu este nevoie să instanțiezi Guzzle sau să setezi manual URL-ul API: clientul folosește implicit `https://t.themarketer.com/api/v1` și un `GuzzleHttp\Client` intern.
+```bash
+composer require themarketer/api-client
+```
+
+---
+
+## Arhitectură pe scurt
+
+- **`TheMarketer\ApiClient\Client`** — punctul unic de intrare: primește `customerId` și `restKey`, construiește **`ApiContext`** + **`ApiGateway`** (Guzzle cu retry opțional) și expune metode pentru fiecare zonă API (`subscribers()`, `orders()`, `checkCredentials()`, etc.).
+- **`ApiGateway`** — adaugă în query autentificarea `k` (rest key) și `u` (customer id), trimite JSON la POST acolo unde DTO-ul o cere, mapează erorile HTTP la excepții (`UnauthorizedException`, `ApiException`, …).
+- **Clasele din `src/Api/`** (`SubscribersApi`, `OrdersApi`, …) — încapsulează endpoint-urile; validarea inputului se face în **`src/DTO/`**.
+
+Baza URL pentru cereri este `Config::baseUrl()` = `{apiUrl}/api/{version}` (implicit `apiVersion` = `v1`). Constructorul `Client` folosește `new Config($customerId, $restKey)` — dacă ai nevoie de alt host decât cel din `Config` (ex. producție), trebuie fie extins clientul, fie modificat `Config` în sursă; verifică valoarea implicită a `apiUrl` în `src/Common/Config.php` pentru mediul tău.
+
+---
+
+## Utilizare de bază
 
 ```php
 use TheMarketer\ApiClient\Client;
 
 $client = new Client(
-    customerId: 'abc123',
-    restKey: 'xyz789',
-    apiKey: 'your-tracking-or-api-key',
+    customerId: 'ID_CONT_THE_MARKETER',  // devine query `u`
+    restKey: 'CHEIA_REST',                 // devine query `k`
+    maxRetryAttempts: 1,                   // opțional: reîncercări la erori tranzitorii (0 = fără retry)
 );
 
-$client->subscribers()->add([...]);
-$client->orders()->save([...]);
-$client->transactionals()->sendEmail([...]);
+// Exemple de acces la API-uri grupate
+$client->subscribers()->addSubscriber([/* … */]);
+$client->orders()->saveOrder([/* … */]);
+$client->transactionals()->sendEmail([/* … */]);
 ```
 
-Parametri obligatorii:
+Aliasuri utile: `add()` → `addSubscriber()`, `save()` → `saveOrder()` (unde există).
 
-| Parametru | Rol |
-|-----------|-----|
-| `customerId` | ID-ul contului / customer (`u` în query la autentificare) |
-| `restKey` | Cheia REST (`k` în query) |
-| `apiKey` | Cheia de tracking / API (ex. pentru `checkCredentials` și alte rute care o cer) |
+---
 
-Metodele vechi (`addSubscriber`, `saveOrder`) rămân disponibile; `add` și `save` sunt aliasuri scurte.
+## Credențiale și utilitare (direct pe `Client`)
+
+Aceste metode nu trec prin `subscribers()` / `orders()`; sunt delegate la **`CredentialsClient`** intern.
+
+### `checkCredentials(string $trackingKey): array`
+
+Verifică credențialele: tracking key-ul este trimis în **body JSON** (împreună cu `r` și `u` derivate din config), pe lângă query-ul `k`/`u` standard.
+
+```php
+$result = $client->checkCredentials('CHEIE_TRACKING');
+// ex. ['success' => true] — JSON decodat de la API
+```
+
+### `checkApiCredentials(): array`
+
+POST către endpoint-ul de verificare API; răspuns JSON decodat ca `array`.
+
+```php
+$result = $client->checkApiCredentials();
+```
+
+### `getCosts()`, `getRealtimeVisitors()`, `getSmsCredit(): array`
+
+Răspuns JSON decodat.
+
+### `getReferralLink(?string $email = null): string`
+
+Returnează **conținutul brut** al răspunsului (nu JSON).
+
+### `getDeliveryLogs(array $payload): array`
+
+`email` obligatoriu; opțional: `per_page`, `page`, `start`, `end`.
+
+### `getEnteredAutomation(array $payload): array`
+
+`date` obligatoriu (`Y-m-d`); opțional `page`, `perPage`.
+
+### `config(): Config`
+
+Acces la `customerId`, `restKey`, `baseUrl()` după nevoie.
+
+---
+
+## Module API (exemple)
+
+| Accesor pe `Client` | Rol |
+|---------------------|-----|
+| `subscribers()` | Abonați: status, add/remove, bulk, tag-uri, etc. |
+| `orders()` | Comenzi, feed URL, retail, statistici |
+| `transactionals()` | Email și SMS tranzacționale |
+| `products()` | CRUD / sync produse, categorii, branduri |
+| `campaigns()` | Listă, creare campanie, raport email, ultima campanie |
+| `loyalty()` | Puncte loialitate |
+| `coupons()` | Cupoane disponibile, salvare |
+| `reviews()` | Recenzii produse, merchant, setări Merchant Pro |
+| `appPush()` | Token-uri push |
+| `events()` | Evenimente personalizate |
+| `reports()` | Rapoarte email/SMS/push/forms/audience |
+
+Detalii despre parametri: fișierele din `src/Api/*Api.php` și `src/DTO/**`. Testele din `tests/*ApiTest.php` arată exemple de payload-uri valide.
+
+### Campanii — note importante
+
+- **`list()`** folosește **POST** către `/campaigns/list`, cu body din `ListCampaign`.
+- **`create()`** cere structură imbricată validată de `CreateCampaign`; la **sender** folosește cheile **`name`**, **`sender`** (email), **`reply_to`** (nu `sender_name` / `sender_email`).
+
+### Recenzii
+
+- **`get()`** returnează **string** (conținut răspuns, nu `array` decodat automat).
+
+### Rapoarte
+
+- Query-urile includ de obicei `start`, `end`, `type` (vezi enum-urile din `src/Enum/` și DTO-urile din `src/DTO/Reports/`).
+
+---
 
 ## Erori și excepții
 
-Mesajul afișat vine de obicei din câmpul JSON `message` al răspunsului (vezi `HttpClient::decodeApiErrorMessage()`).
-
 **Înainte de request (validare locală)**
 
-- **Validare DTO** (payload invalid): `Illuminate\Validation\ValidationException`.
-- **Credențiale lipsă în client** (ex. lipsesc `customerId` / `restKey` pentru rute care le cer): `TheMarketer\ApiClient\Exception\ValidationException` (cod implicit 400).
+- **`TheMarketer\ApiClient\Exception\ValidationException`** — lipsă `customerId` / `restKey` în config sau mesaje din validarea Symfony pe DTO.
+- Lipsă argumente obligatorii la construirea DTO poate duce la **`ArgumentCountError`** sau **`TypeError`** înainte de rețea.
 
-**După request — mapare după status HTTP** (`HttpClient::throwForErrorResponse()`)
+**După request** (`ApiGateway` mapează status HTTP)
 
 | Status | Excepție |
 |--------|----------|
 | **401** | `UnauthorizedException` |
 | **404** | `CustomerNotFoundException` |
 | **405** | `MethodNotAllowedException` |
-| **Orice alt 4xx/5xx** (inclusiv **400**, **422**, **403**, **5xx**) | `ApiException` — folosește `$e->getHttpStatusCode()` și `$e->getMessage()` |
+| Alte erori | `ApiException` (folosește codul și mesajul din răspuns; mesajul e extras din JSON `message` când există) |
 
-Nu există în pachet clase separate precum `AuthException` sau `AccountInactiveException`: două situații diferite cu același status (ex. două cazuri de **401**) se deosebesc prin **mesajul** returnat de API, tot într-o `UnauthorizedException` sau prin analiza mesajului în `catch`.
-
-**Decodare JSON la succes**
-
-- Dacă răspunsul nu e JSON valid când metoda așteaptă JSON: `\JsonException`.
-
-Detalii despre câmpurile obligatorii pentru fiecare acțiune: clasele din `src/DTO/`.
-
----
-
-## Credențiale și utilitare (pe `Client`)
-
-Aceste metode nu folosesc `subscribers()`, `orders()` etc., ci sunt apelate direct pe `Client`.
-
-### `checkCredentials()`
-
-Verifică credențialele (necesită `u`, `k` și `r` — tracking key). Returnează `array` (JSON decodat de la API, ex. `['success' => true]`).
-
-```php
-$result = $client->checkCredentials();
-```
-
-### `checkApiCredentials()`
-
-Returnează `array` (JSON decodat). Erorile HTTP folosesc aceleași excepții ca în tabelul de mai sus.
-
-```php
-$result = $client->checkApiCredentials();
-```
-
-### `getCosts()`, `getRealtimeVisitors()`, `getSmsCredit()`
-
-Returnează `array` (JSON decodat de la API).
-
-```php
-$costs = $client->getCosts();
-$visitors = $client->getRealtimeVisitors();
-$credit = $client->getSmsCredit();
-```
-
-### `getReferralLink(?string $email = null)`
-
-Returnează `string` (conținutul răspunsului).
-
-```php
-$link = $client->getReferralLink();
-$link = $client->getReferralLink('user@example.com');
-```
-
-### `getDeliveryLogs(array $payload)`
-
-`email` este obligatoriu; opțional: `per_page`, `page`, `start`, `end`. Validarea email poate folosi și verificare DNS — folosește adrese reale dacă primești erori de validare.
-
-```php
-$logs = $client->getDeliveryLogs([
-    'email' => 'user@gmail.com',
-    'per_page' => 25,
-    'page' => 1,
-]);
-```
-
-### `getEnteredAutomation(array $payload)`
-
-`date` obligatoriu (`Y-m-d`); opțional `page`, `perPage`.
-
-```php
-$data = $client->getEnteredAutomation([
-    'date' => '2025-03-15',
-    'page' => 1,
-    'perPage' => 50,
-]);
-```
-
----
-
-## Subscribers — `$client->subscribers()`
-
-### `statusSubscriber(string $email)`
-
-```php
-$status = $client->subscribers()->statusSubscriber('user@example.com');
-```
-
-### `unsubscribedEmails(string $date_from, string $date_to)`
-
-```php
-$emails = $client->subscribers()->unsubscribedEmails('2025-01-01', '2025-01-31');
-```
-
-Alte metode (add, remove, tags, bulk etc.): vezi `src/Api/SubscribersApi.php` și DTO-urile din `src/DTO/Subscribers/`.
-
----
-
-## Orders — `$client->orders()`
-
-### `saveOrder(array $payload)`
-
-Payload-ul este validat de `SaveOrder` — multe câmpuri obligatorii (comandă, client, produse). Consultă `src/DTO/Orders/SaveOrder.php` sau testele din `tests/OrdersApiTest.php`.
-
-```php
-$result = $client->orders()->saveOrder([
-    // 'number', 'email_address', 'phone', 'firstname', 'lastname', …
-]);
-```
-
-### `updateOrderStatus(string $order_number, string $order_status)`
-
-```php
-$result = $client->orders()->updateOrderStatus('ORD-1001', 'completed');
-```
-
----
-
-## Transactionale — `$client->transactionals()`
-
-### `sendEmail(array $payload)`
-
-```php
-$result = $client->transactionals()->sendEmail([
-    'to' => 'recipient@example.com',
-    'subject' => 'Titlu',
-    'body' => '<p>Conținut HTML</p>',
-    'from' => 'Sender Name <shop@example.com>', // opțional
-    'reply_to' => 'support@example.com',        // opțional
-]);
-```
-
-### `sendSms(string $to, string $content)`
-
-```php
-$result = $client->transactionals()->sendSms('+40700000000', 'Mesaj scurt');
-```
-
----
-
-## Produse — `$client->products()`
-
-### `createProduct(array $payload)` / `updateProduct(array $payload)`
-
-DTO-urile impun câmpuri precum `id`, `sku`, `name`, `price`, etc. Vezi `src/DTO/Products/CreateProduct.php`.
-
-```php
-$result = $client->products()->createProduct([
-    'id' => 100,
-    'sku' => 'SKU-1',
-    'name' => 'Produs',
-    // …
-]);
-```
-
----
-
-## Campanii — `$client->campaigns()`
-
-### `list()`
-
-```php
-$campaigns = $client->campaigns()->list();
-```
-
-### `create(array $payload)`
-
-Structură complexă: `type`, `mode`, `sender`, `audience`, `subject`, `content`, `scheduling`, `tracking`. Vezi `src/DTO/Campaigns/CreateCampaign.php` și `tests/CampaignsApiTest.php` (`minimalCreateCampaignPayload`).
-
-```php
-$result = $client->campaigns()->create([
-    'type' => 'email',
-    'mode' => 'regular',
-    'sender' => [
-        'sender_name' => 'Magazin',
-        'sender_email' => 'shop@example.com',
-        'reply_to' => 'support@example.com',
-    ],
-    // … audience, subject, content, scheduling, tracking
-]);
-```
-
-### `getEmailReport(string|int $id)`
-
-```php
-$report = $client->campaigns()->getEmailReport('campaign-id');
-```
-
-### `getLatestCampaign(?int $limit = null)`
-
-```php
-$latest = $client->campaigns()->getLatestCampaign(5);
-```
-
----
-
-## Loialitate — `$client->loyalty()`
-
-### `getInfo(string $email)`
-
-```php
-$info = $client->loyalty()->getInfo('user@example.com');
-```
-
-### `managePoints(string $email, string $action, int $points)`
-
-```php
-$result = $client->loyalty()->managePoints('user@example.com', 'increase', 100);
-```
-
----
-
-## Cupoane — `$client->coupons()`
-
-### `getAvailableCoupons(string $email)`
-
-```php
-$coupons = $client->coupons()->getAvailableCoupons('user@example.com');
-```
-
-### `save(array $payload)`
-
-```php
-$result = $client->coupons()->save([
-    'code' => 'SUMMER10',
-    'type' => 'your-type', // string — valorile acceptate sunt definite de API
-    'value' => '10',
-    'expiration_date' => '2025-12-31',
-]);
-```
-
----
-
-## Recenzii — `$client->reviews()`
-
-### `get(array $query = [])`
-
-Parametri opționali: `page`, `perPage`, `t` (vezi `ProductReviewsQuery`).
-
-```php
-$reviews = $client->reviews()->get(['page' => 1, 'perPage' => 20]);
-```
-
-### `create(array $payload)`
-
-```php
-$result = $client->reviews()->create([
-    'order_id' => 'ORD-1',
-    'review_date' => '2025-03-01',
-    'order_rating' => '5',
-]);
-```
-
----
-
-## App push — `$client->appPush()`
-
-### `setToken(string $email, string $token, string $type)`
-
-`type`: de ex. `ios` sau `android` (conform validării din DTO).
-
-```php
-$result = $client->appPush()->setToken(
-    'user@example.com',
-    'fcm-device-token…',
-    'android',
-);
-```
-
-### `removeToken(string $email, string $type)`
-
-```php
-$result = $client->appPush()->removeToken('user@example.com', 'ios');
-```
-
----
-
-## Evenimente — `$client->events()`
-
-### `sendCustomEvent(array $payload)`
-
-```php
-$result = $client->events()->sendCustomEvent([
-    'email' => 'user@example.com',
-    'event' => 'viewed_product',
-]);
-```
-
----
-
-## Rapoarte — `$client->reports()`
-
-Query-urile includ de obicei interval `start` / `end` (date) și `type` (în funcție de endpoint). Pentru rapoarte email, `type` poate fi valorile din `TheMarketer\ApiClient\Enum\EmailReportType` (ex. `sent`, `open-rate`).
-
-### `getEmailCampaigns(array $query)`
-
-```php
-$result = $client->reports()->getEmailCampaigns([
-    'type' => 'sent',
-    'start' => '2025-01-01',
-    'end' => '2025-01-31',
-]);
-```
-
-Alte metode pe același API: `getEmailAutomation`, `getSmsCampaigns`, `getPushCampaigns`, `getAudience`, `getForms` — vezi `src/Api/ReportsApi.php` și DTO-urile din `src/DTO/Reports/`.
+La răspuns de succes cu JSON invalid, metodele care decodă pot arunca **`JsonException`**. Pentru erori de rețea: **`GuzzleHttp\Exception\GuzzleException`**.
 
 ---
 
@@ -369,12 +159,22 @@ Alte metode pe același API: `getEmailAutomation`, `getSmsCampaigns`, `getPushCa
 composer test
 ```
 
+Suite-ul folosește `ApiGateway` cu **Guzzle MockHandler** (fără apeluri reale la API). Pentru **`Client`** în teste cu mock HTTP, `context` este `readonly`; în practică se testează `CredentialsClient` și clasele `*Api` cu același stack — vezi `tests/CredentialsClientTest.php` și `tests/TestCase.php`.
+
 ---
 
-## Script de verificare rapidă
+## Script smoke (`smoke.php`)
 
-În repo există `smoke.php` (necesită chei și URL reale). Rulezi din rădăcina proiectului:
+Verificare rapidă cu **credențiale reale** (nu comita chei în repo):
 
 ```bash
 php smoke.php
 ```
+
+Exemplul din repo apelează `checkCredentials($trackingKey)` — înlocuiește valorile cu cele din contul tău The Marketer.
+
+---
+
+## Licență
+
+MIT (vezi `composer.json`).

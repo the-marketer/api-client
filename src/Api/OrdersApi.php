@@ -8,6 +8,7 @@ use GuzzleHttp\Exception\GuzzleException;
 use JsonException;
 use TheMarketer\ApiClient\Common\AbstractApi;
 use TheMarketer\ApiClient\DTO\Orders\SaveOrder;
+use TheMarketer\ApiClient\DTO\Orders\SaveOrderRetail;
 use TheMarketer\ApiClient\DTO\Orders\UpdateFeedUrl;
 use TheMarketer\ApiClient\DTO\Orders\UpdateOrderStatus;
 use TheMarketer\ApiClient\Exception\ValidationException;
@@ -16,7 +17,7 @@ class OrdersApi extends AbstractApi
 {
     /**
      * @throws GuzzleException
-     * @throws \JsonException
+     * @throws JsonException
      */
     public function updateOrderStatus(string $order_number, string $order_status): array
     {
@@ -66,7 +67,7 @@ class OrdersApi extends AbstractApi
      */
     public function saveOrderRetail(array $payload): array
     {
-        $dto = SaveOrder::validateAndCreate($payload);
+        $dto = SaveOrderRetail::validateAndCreate($payload);
 
         return $this->context->http->post('/save_order_retail', $dto->toApiPayload());
     }
@@ -100,7 +101,7 @@ class OrdersApi extends AbstractApi
             'type' => $type
         ]);
 
-        return $this->context->http->post('/update_feed_url', $dto->toApiPayload());
+        return $this->context->http->post('/update_order_feed_url', $dto->toApiPayload());
     }
 
     /**

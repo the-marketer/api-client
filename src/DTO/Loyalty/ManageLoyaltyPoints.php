@@ -5,12 +5,9 @@ declare(strict_types=1);
 namespace TheMarketer\ApiClient\DTO\Loyalty;
 
 use Symfony\Component\Validator\Constraints as Assert;
-use TheMarketer\ApiClient\Common\Data;
+use TheMarketer\ApiClient\Common\AbstractPayload;
 
-/**
- * Payload pentru {@see \NotificationService\Sdk\Internal\LoyaltyApi::managePoints()}.
- */
-class ManageLoyaltyPoints extends Data
+class ManageLoyaltyPoints extends AbstractPayload
 {
     public function __construct(
         #[Assert\NotBlank]

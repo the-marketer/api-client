@@ -19,8 +19,6 @@ class DeleteSubscriber extends AbstractPayload
         public ?string $email = null,
         public ?string $phone = null,
     ) {
-        $this->email = StringUtil::trim($email);
-        $this->phone = StringUtil::trim($phone);
     }
 
     public function toApiPayload(): array

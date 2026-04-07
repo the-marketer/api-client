@@ -18,7 +18,6 @@ use NotificationService\Sdk\Internal\ReportsApi;
 use NotificationService\Sdk\Internal\ReviewsApi;
 use NotificationService\Sdk\Internal\SubscribersApi;
 use NotificationService\Sdk\Internal\TransactionalsApi;
-use TheMarketer\ApiClient\ApiGateway;
 use TheMarketer\ApiClient\Common\ApiContext;
 use TheMarketer\ApiClient\Common\Config;
 use TheMarketer\ApiClient\Exception\ValidationException;
@@ -67,30 +66,29 @@ class Client
 
         $this->subscribers = new SubscribersApi($this->context);
 
-       $this->orders = new OrdersApi($this->context);
-//
-//        $this->transactionals = new TransactionalsApi($this->http);
-//
-//        $this->products = new ProductsApi($this->http);
-//
+        $this->orders = new OrdersApi($this->context);
+
+        $this->transactionals = new TransactionalsApi($this->context);
+
+        $this->products = new ProductsApi($this->context);
+
         $this->campaigns = new CampaignsApi($this->context);
-//
-//        $this->loyalty = new LoyaltyApi($this->http);
-//
-//        $this->coupons = new CouponsApi($this->http);
-//
-//        $this->reviews = new ReviewsApi($this->http);
-//
-//        $this->appPush = new AppPushApi($this->http);
-//
-//        $this->events = new EventsApi($this->http);
-//
-//        $this->reports = new ReportsApi($this->http);
-//
-//        $this->credentials = new CredentialsClient(
-//            $this->http,
-//            $this->trackingKey !== '' ? $this->trackingKey : null,
-//        );
+
+        $this->loyalty = new LoyaltyApi($this->context);
+
+        $this->coupons = new CouponsApi($this->context);
+
+        $this->reviews = new ReviewsApi($this->context);
+
+        $this->appPush = new AppPushApi($this->context);
+
+        $this->events = new EventsApi($this->context);
+
+        $this->reports = new ReportsApi($this->context);
+
+        $this->credentials = new CredentialsClient(
+            $this->context
+        );
     }
 
     public function subscribers(): SubscribersApi
@@ -157,9 +155,9 @@ class Client
      * @throws \Illuminate\Validation\ValidationException
      * @throws ValidationException|GuzzleException|JsonException
      */
-    public function checkCredentials(): array
+    public function checkCredentials(string $trackingKey): array
     {
-        return $this->credentials->checkCredentials();
+        return $this->credentials->checkCredentials($trackingKey);
     }
 
     /**
@@ -200,7 +198,7 @@ class Client
 
     /**
      * @throws ValidationException
-     * @throws GuzzleException
+     * @throws GuzzleException|JsonException
      */
     public function getReferralLink(?string $email = null): string
     {

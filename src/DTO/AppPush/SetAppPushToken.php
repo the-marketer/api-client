@@ -4,22 +4,20 @@ declare(strict_types=1);
 
 namespace TheMarketer\ApiClient\DTO\AppPush;
 
-use Spatie\LaravelData\Attributes\Validation\Required;
-use Spatie\LaravelData\Attributes\Validation\Rule;
-use Spatie\LaravelData\Data;
+use Symfony\Component\Validator\Constraints as Assert;
+use TheMarketer\ApiClient\Common\AbstractPayload;
 
-/**
- */
-class SetAppPushToken extends Data
+class SetAppPushToken extends AbstractPayload
 {
     public function __construct(
-        #[Rule('required', 'email')]
+        #[Assert\NotBlank]
+        #[Assert\Email]
         public string $email,
-        #[Rule('required')]
+        #[Assert\NotBlank]
+        #[Assert\Type('string')]
         public string $token,
-        #[Required]
-        #[Rule('in:ios,android')]
+        #[Assert\NotBlank]
+        #[Assert\Choice(choices: ['ios', 'android'])]
         public string $type,
-    ) {
-    }
+    ) {}
 }

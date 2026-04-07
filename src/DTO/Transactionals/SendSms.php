@@ -4,19 +4,15 @@ declare(strict_types=1);
 
 namespace TheMarketer\ApiClient\DTO\Transactionals;
 
-use Spatie\LaravelData\Attributes\Validation\Required;
-use Spatie\LaravelData\Attributes\Validation\Rule;
-use Spatie\LaravelData\Data;
+use Symfony\Component\Validator\Constraints as Assert;
+use TheMarketer\ApiClient\Common\AbstractPayload;
 
-class SendSms extends Data
+class SendSms extends AbstractPayload
 {
     public function __construct(
-        #[Required]
-        #[Rule('string', 'min:1')]
+        #[Assert\NotBlank]
         public string $to,
-        #[Required]
-        #[Rule('string', 'min:1')]
+        #[Assert\NotBlank]
         public string $content,
-    ) {
-    }
+    ) {}
 }

@@ -4,23 +4,25 @@ declare(strict_types=1);
 
 namespace TheMarketer\ApiClient\DTO\Coupons;
 
-use Spatie\LaravelData\Attributes\Validation\Required;
-use Spatie\LaravelData\Attributes\Validation\Rule;
-use Spatie\LaravelData\Data;
+use Symfony\Component\Validator\Constraints as Assert;
+use TheMarketer\ApiClient\Common\AbstractPayload;
 
-class SaveCoupon extends Data
+class SaveCoupon extends AbstractPayload
 {
     public function __construct(
-        #[Required]
-        #[Rule('string', 'filled')]
+        #[Assert\NotBlank]
+        #[Assert\Type('string')]
         public string $code,
-        #[Required]
-        #[Rule('string')]
+        #[Assert\NotBlank]
+        #[Assert\Type('string')]
         public string $type,
-        #[Required]
-        #[Rule('string')]
+        #[Assert\NotBlank]
+        #[Assert\Type('string')]
         public string $value,
-        public string $expiration_date
-    ) {
-    }
+        #[Assert\NotBlank]
+        #[Assert\Date]
+        public string $expiration_date,
+        #[Assert\Type('string')]
+        public ?string $email = null,
+    ) {}
 }

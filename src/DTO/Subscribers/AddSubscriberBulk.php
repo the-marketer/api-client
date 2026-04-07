@@ -10,18 +10,17 @@ use TheMarketer\ApiClient\Common\AbstractPayload;
 class AddSubscriberBulk extends AbstractPayload
 {
     /**
-     * @param list<SubscriberRow> $subscribers
+     * @param list<SubscriberValidator> $subscribers
      */
     public function __construct(
         #[Assert\Count(min: 1, minMessage: 'subscribers must not be empty.')]
-        #[Assert\All([new Assert\Valid()])]
         public array $subscribers,
     ) {}
 
     public static function validateAndCreate(array $data): static
     {
         $rows = array_map(
-            fn(array $item) => SubscriberRow::validateAndCreate($item),
+            fn(array $item) => SubscriberValidator::validateAndCreate($item),
             $data['subscribers'] ?? [],
         );
 
@@ -37,7 +36,7 @@ class AddSubscriberBulk extends AbstractPayload
     public function toApiPayload(): array
     {
         return array_map(
-            static fn(SubscriberRow $row): array => $row->toApiPayload(),
+            static fn(SubscriberValidator $row): array => $row->toApiPayload(),
             $this->subscribers,
         );
     }

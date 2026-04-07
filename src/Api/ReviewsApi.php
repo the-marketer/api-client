@@ -6,10 +6,11 @@ namespace NotificationService\Sdk\Internal;
 
 use GuzzleHttp\Exception\GuzzleException;
 use JsonException;
+use TheMarketer\ApiClient\Common\AbstractApi;
 use TheMarketer\ApiClient\DTO\MerchantPro\MerchantProSettings;
 use TheMarketer\ApiClient\DTO\Reviews\AddReview;
 use TheMarketer\ApiClient\DTO\Reviews\MerchantAddReview;
-use TheMarketer\ApiClient\DTO\Reviews\ProductReviewsQuery;
+use TheMarketer\ApiClient\DTO\Reviews\ProductReviews;
 use TheMarketer\ApiClient\Exception\ApiException;
 use TheMarketer\ApiClient\Exception\CustomerNotFoundException;
 use TheMarketer\ApiClient\Exception\MethodNotAllowedException;
@@ -17,16 +18,11 @@ use TheMarketer\ApiClient\Exception\UnauthorizedException;
 use TheMarketer\ApiClient\Exception\ValidationException;
 use TheMarketer\ApiClient\ApiGateway;
 
-class ReviewsApi
+class ReviewsApi extends AbstractApi
 {
-    public function __construct(
-        private readonly ApiGateway $api,
-    ) {
-    }
-
     /**
      * @param  array<string, mixed>  $query
-     * @return array<string, mixed>
+     * @return string - return XML
      *
      * @throws UnauthorizedException
      * @throws CustomerNotFoundException
@@ -36,12 +32,12 @@ class ReviewsApi
      * @throws JsonException
      * @throws GuzzleException
      */
-    public function get(array $query = []): array
+    public function get(array $query = []): string
     {
-        $dto = ProductReviewsQuery::validateAndCreate($query);
+        $dto = ProductReviews::validateAndCreate($query);
 
-        $request = $this->api->getRequest('/product_reviews', $dto->toApiPayload());
-        return $this->api->decodeJson($this->api->sendJson($request));
+        $response = $this->context->http->get('/product_reviews', $dto->toApiPayload(), json: false);
+        return $response->getBody()->getContents();
     }
 
     /**
@@ -58,10 +54,9 @@ class ReviewsApi
      */
     public function create(array $payload): array
     {
-        $dto = AddReview::validateAndCreate($payload)->toArray();
+        $dto = AddReview::validateAndCreate($payload);
 
-        $request = $this->api->postRequest('/add_review', $dto);
-        return $this->api->decodeJson($this->api->sendJson($request));
+        return $this->context->http->post('/add_review', $dto->toApiPayload());
     }
 
     /**
@@ -80,8 +75,7 @@ class ReviewsApi
     {
         $dto = MerchantAddReview::validateAndCreate($payload);
 
-        $request = $this->api->postRequest('/merchant_add_review', $dto->toApiPayload());
-        return $this->api->decodeJson($this->api->sendJson($request));
+        return $this->context->http->post('/merchant_add_review', $dto->toApiPayload());
     }
 
     /**
@@ -100,7 +94,6 @@ class ReviewsApi
     {
         $dto = MerchantProSettings::validateAndCreate($payload);
 
-        $request = $this->api->postRequest('/merchantpro_settings', $dto->toApiPayload());
-        return $this->api->decodeJson($this->api->sendJson($request));
+        return $this->context->http->post('/merchantpro_settings', $dto->toApiPayload());
     }
 }

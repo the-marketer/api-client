@@ -9,56 +9,20 @@ use GuzzleHttp\Exception\GuzzleException;
 use GuzzleHttp\Handler\MockHandler;
 use GuzzleHttp\HandlerStack;
 use GuzzleHttp\Psr7\Response;
-use Illuminate\Validation\ValidationException as IlluminateValidationException;
 use NotificationService\Sdk\Internal\ProductsApi;
-use Psr\Http\Message\RequestInterface;
+use TheMarketer\ApiClient\ApiGateway;
+use TheMarketer\ApiClient\Common\ApiContext;
 use TheMarketer\ApiClient\Common\Config;
 use TheMarketer\ApiClient\Exception\ValidationException;
 
 final class ProductsApiTest extends TestCase
 {
-    private const BASE_URL = 'https://api.example.test';
-
-    private const DOMAIN_KEY = 'domain-1';
-
-    private const API_KEY = 'api-secret';
-
     /**
      * @return array{0: ProductsApi, 1: \stdClass}
-     *
-     * @phpstan-param \stdClass&object{requests: list<RequestInterface>} $bucket
      */
     private function apiWithMockResponses(Response ...$responses): array
     {
-        $bucket = new \stdClass();
-        $bucket->requests = [];
-
-        $queue = [];
-        foreach ($responses as $response) {
-            $queue[] = function (RequestInterface $request, array $options) use ($bucket, $response): Response {
-                $bucket->requests[] = $request;
-
-                return $response;
-            };
-        }
-        $mock = new MockHandler($queue);
-        $client = new Client(['handler' => $mock]);
-
-        $api = new ProductsApi(new \TheMarketer\ApiClient\HttpClient($client, new Config(self::DOMAIN_KEY, self::API_KEY), self::BASE_URL));
-
-        return [$api, $bucket];
-    }
-
-    /**
-     * @param \stdClass $bucket from {@see apiWithMockResponses()} with `requests` list
-     */
-    private function lastRequest(\stdClass $bucket): RequestInterface
-    {
-        $requests = $bucket->requests;
-        $this->assertIsArray($requests);
-        $this->assertNotEmpty($requests, 'Expected at least one HTTP request.');
-
-        return $requests[array_key_last($requests)];
+        return $this->createApiWithMock(ProductsApi::class, ...$responses);
     }
 
     /**
@@ -67,7 +31,7 @@ final class ProductsApiTest extends TestCase
     private function minimalCreateProductPayload(): array
     {
         return [
-            'id' => 1,
+            'id' => '1',
             'sku' => 'SKU-1',
             'name' => 'Product',
             'description' => 'Description',
@@ -108,8 +72,8 @@ final class ProductsApiTest extends TestCase
         $this->assertStringEndsWith('/product/create', $request->getUri()->getPath());
 
         parse_str($request->getUri()->getQuery(), $query);
-        $this->assertSame(self::API_KEY, $query['k']);
-        $this->assertSame(self::DOMAIN_KEY, $query['u']);
+        $this->assertSame(self::MOCK_API_KEY, $query['k']);
+        $this->assertSame(self::MOCK_DOMAIN, $query['u']);
 
         $body = json_decode((string) $request->getBody(), true, 512, JSON_THROW_ON_ERROR);
         $this->assertSame($payload['id'], $body['id']);
@@ -129,7 +93,7 @@ final class ProductsApiTest extends TestCase
         );
 
         $payload = [
-            'id' => 42,
+            'id' => '42',
             'sku' => 'SKU-42',
             'name' => 'Renamed',
         ];
@@ -143,11 +107,11 @@ final class ProductsApiTest extends TestCase
         $this->assertStringEndsWith('/product/update', $request->getUri()->getPath());
 
         parse_str($request->getUri()->getQuery(), $query);
-        $this->assertSame(self::API_KEY, $query['k']);
-        $this->assertSame(self::DOMAIN_KEY, $query['u']);
+        $this->assertSame(self::MOCK_API_KEY, $query['k']);
+        $this->assertSame(self::MOCK_DOMAIN, $query['u']);
 
         $body = json_decode((string) $request->getBody(), true, 512, JSON_THROW_ON_ERROR);
-        $this->assertSame(42, $body['id']);
+        $this->assertSame('42', $body['id']);
         $this->assertSame('SKU-42', $body['sku']);
         $this->assertSame('Renamed', $body['name']);
     }
@@ -179,8 +143,8 @@ final class ProductsApiTest extends TestCase
         $this->assertStringEndsWith('/category/upsert', $request->getUri()->getPath());
 
         parse_str($request->getUri()->getQuery(), $query);
-        $this->assertSame(self::API_KEY, $query['k']);
-        $this->assertSame(self::DOMAIN_KEY, $query['u']);
+        $this->assertSame(self::MOCK_API_KEY, $query['k']);
+        $this->assertSame(self::MOCK_DOMAIN, $query['u']);
 
         $body = json_decode((string) $request->getBody(), true, 512, JSON_THROW_ON_ERROR);
         $this->assertSame($payload['id'], $body['id']);
@@ -216,8 +180,8 @@ final class ProductsApiTest extends TestCase
         $this->assertStringEndsWith('/brand/upsert', $request->getUri()->getPath());
 
         parse_str($request->getUri()->getQuery(), $query);
-        $this->assertSame(self::API_KEY, $query['k']);
-        $this->assertSame(self::DOMAIN_KEY, $query['u']);
+        $this->assertSame(self::MOCK_API_KEY, $query['k']);
+        $this->assertSame(self::MOCK_DOMAIN, $query['u']);
 
         $body = json_decode((string) $request->getBody(), true, 512, JSON_THROW_ON_ERROR);
         $this->assertSame($payload['id'], $body['id']);
@@ -229,7 +193,8 @@ final class ProductsApiTest extends TestCase
     public function testCreateProductThrowsWhenDomainKeyMissing(): void
     {
         $client = new Client(['handler' => HandlerStack::create(new MockHandler([new Response(200)]))]);
-        $api = new ProductsApi(new \TheMarketer\ApiClient\HttpClient($client, new Config('', self::API_KEY), self::BASE_URL));
+        $config = new Config('', self::MOCK_API_KEY, self::MOCK_BASE_URL);
+        $api = new ProductsApi(new ApiContext(new ApiGateway($config, 0, $client), $config));
 
         $this->expectException(ValidationException::class);
         $this->expectExceptionMessage('Customer ID not provided.');
@@ -240,7 +205,8 @@ final class ProductsApiTest extends TestCase
     public function testCreateProductThrowsWhenApiKeyMissing(): void
     {
         $client = new Client(['handler' => HandlerStack::create(new MockHandler([new Response(200)]))]);
-        $api = new ProductsApi(new \TheMarketer\ApiClient\HttpClient($client, new Config(self::DOMAIN_KEY, ''), self::BASE_URL));
+        $config = new Config(self::MOCK_DOMAIN, '', self::MOCK_BASE_URL);
+        $api = new ProductsApi(new ApiContext(new ApiGateway($config, 0, $client), $config));
 
         $this->expectException(ValidationException::class);
         $this->expectExceptionMessage('Rest key not provided.');
@@ -252,24 +218,24 @@ final class ProductsApiTest extends TestCase
     {
         [$api] = $this->apiWithMockResponses();
 
-        $this->expectException(IlluminateValidationException::class);
+        $this->expectException(\ArgumentCountError::class);
 
         $payload = $this->minimalCreateProductPayload();
         unset($payload['sku']);
         $api->createProduct($payload);
     }
 
-    public function testSyncCategoriesThrowsWhenUrlInvalid(): void
+    public function testSyncCategoriesThrowsWhenNameIsBlank(): void
     {
         [$api] = $this->apiWithMockResponses();
 
-        $this->expectException(IlluminateValidationException::class);
+        $this->expectException(ValidationException::class);
 
         $api->syncCategories([
             'id' => 'c1',
-            'name' => 'X',
+            'name' => '',
             'hierarchy' => '1',
-            'url' => 'not-a-url',
+            'url' => 'https://example.com/c',
             'image_url' => 'https://example.com/i.jpg',
         ]);
     }

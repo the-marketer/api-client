@@ -6,6 +6,7 @@ namespace NotificationService\Sdk\Internal;
 
 use GuzzleHttp\Exception\GuzzleException;
 use JsonException;
+use TheMarketer\ApiClient\Common\AbstractApi;
 use TheMarketer\ApiClient\DTO\Products\CreateProduct;
 use TheMarketer\ApiClient\DTO\Products\SyncBrand;
 use TheMarketer\ApiClient\DTO\Products\SyncCategory;
@@ -15,15 +16,9 @@ use TheMarketer\ApiClient\Exception\CustomerNotFoundException;
 use TheMarketer\ApiClient\Exception\MethodNotAllowedException;
 use TheMarketer\ApiClient\Exception\UnauthorizedException;
 use TheMarketer\ApiClient\Exception\ValidationException;
-use TheMarketer\ApiClient\ApiGateway;
 
-class ProductsApi
+class ProductsApi extends AbstractApi
 {
-    public function __construct(
-        private readonly ApiGateway $api,
-    ) {
-    }
-
     /**
      * @return array<string, mixed>
      *
@@ -39,8 +34,7 @@ class ProductsApi
     {
         $dto = CreateProduct::validateAndCreate($payload);
 
-        $request = $this->api->postRequest('/product/create', $dto->toApiPayload());
-        return $this->api->decodeJson($this->api->sendJson($request));
+        return $this->context->http->post('/product/create', $dto->toApiPayload());
     }
 
     /**
@@ -60,8 +54,7 @@ class ProductsApi
     {
         $dto = UpdateProduct::validateAndCreate($payload);
 
-        $request = $this->api->postRequest('/product/update', $dto->toApiPayload());
-        return $this->api->decodeJson($this->api->sendJson($request));
+        return $this->context->http->post('/product/update', $dto->toApiPayload());
     }
 
 
@@ -80,10 +73,9 @@ class ProductsApi
      */
     public function syncCategories(array $payload): array
     {
-        $dto = SyncCategory::validateAndCreate($payload)->toArray();
+        $dto = SyncCategory::validateAndCreate($payload);
 
-        $request = $this->api->postRequest('/category/upsert', $dto);
-        return $this->api->decodeJson($this->api->sendJson($request));
+        return $this->context->http->post('/category/upsert', $dto->toApiPayload());
     }
 
     /**
@@ -101,9 +93,8 @@ class ProductsApi
      */
     public function syncBrands(array $payload): array
     {
-        $dto = SyncBrand::validateAndCreate($payload)->toArray();
+        $dto = SyncBrand::validateAndCreate($payload);
 
-        $request = $this->api->postRequest('/brand/upsert', $dto);
-        return $this->api->decodeJson($this->api->sendJson($request));
+        return $this->context->http->post('/brand/upsert', $dto->toApiPayload());
     }
 }

@@ -6,6 +6,7 @@ namespace NotificationService\Sdk\Internal;
 
 use GuzzleHttp\Exception\GuzzleException;
 use JsonException;
+use TheMarketer\ApiClient\Common\AbstractApi;
 use TheMarketer\ApiClient\DTO\Events\SendCustomEvent;
 use TheMarketer\ApiClient\Exception\ApiException;
 use TheMarketer\ApiClient\Exception\CustomerNotFoundException;
@@ -14,12 +15,8 @@ use TheMarketer\ApiClient\Exception\UnauthorizedException;
 use TheMarketer\ApiClient\Exception\ValidationException;
 use TheMarketer\ApiClient\ApiGateway;
 
-class EventsApi
+class EventsApi extends AbstractApi
 {
-    public function __construct(
-        private readonly ApiGateway $api,
-    ) {
-    }
 
     /**
      * @param  array<string, mixed>  $payload
@@ -35,9 +32,8 @@ class EventsApi
      */
     public function sendCustomEvent(array $payload): array
     {
-        $dto = SendCustomEvent::validateAndCreate($payload)->toArray();
+        $dto = SendCustomEvent::validateAndCreate($payload);
 
-        $request = $this->api->postRequest('/custom_events', $dto);
-        return $this->api->decodeJson($this->api->sendJson($request));
+        return $this->context->http->post('/custom_events', $dto->toApiPayload());
     }
 }

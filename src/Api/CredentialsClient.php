@@ -5,19 +5,19 @@ declare(strict_types=1);
 namespace NotificationService\Sdk\Internal;
 
 use GuzzleHttp\Exception\GuzzleException;
-use TheMarketer\ApiClient\DTO\Credentials\CheckCredentialsQuery;
-use TheMarketer\ApiClient\DTO\Credentials\GetDeliveryLogsQuery;
-use TheMarketer\ApiClient\DTO\Credentials\GetEnteredAutomationQuery;
-use TheMarketer\ApiClient\DTO\Credentials\GetReferralLinkQuery;
+use JsonException;
+use TheMarketer\ApiClient\Common\AbstractApi;
+use TheMarketer\ApiClient\Common\ApiContext;
+use TheMarketer\ApiClient\DTO\Credentials\CheckCredentials;
+use TheMarketer\ApiClient\DTO\Credentials\DeliveryLogs;
+use TheMarketer\ApiClient\DTO\Credentials\EnteredAutomation;
+use TheMarketer\ApiClient\DTO\Credentials\ReferralLink;
 use TheMarketer\ApiClient\Exception\ValidationException;
-use TheMarketer\ApiClient\ApiGateway;
 
-final class CredentialsClient
+final class CredentialsClient extends AbstractApi
 {
-    public function __construct(
-        private readonly ApiGateway $http,
-        private readonly ?string $trackingKey = null,
-    ) {
+    public function __construct(ApiContext $context) {
+        parent::__construct($context);
     }
 
     /**
@@ -25,35 +25,17 @@ final class CredentialsClient
      *
      * @throws \Illuminate\Validation\ValidationException
      * @throws GuzzleException
-     * @throws \JsonException
+     * @throws JsonException
      */
-    public function checkCredentials(): array
+    public function checkCredentials(string $trackingKey): array
     {
-        $dto = CheckCredentialsQuery::validateAndCreate([
-            'k' => $this->trackingKey,
-            'r' => $this->http->config()->restKey(),
-            'u' => $this->http->config()->customerId(),
+        $dto = CheckCredentials::validateAndCreate([
+            'k' => $trackingKey,
+            'r' => $this->context->http->config()->restKey(),
+            'u' => $this->context->http->config()->customerId(),
         ]);
 
-        $request = $this->http->postRequest(
-            '/check-credentials',
-            [],
-            $dto->toApiPayload(),
-            $this->checkCredentialsHeaders(),
-            false,
-        );
-
-        return $this->http->decodeJson($this->http->sendJson($request));
-    }
-
-    /**
-     * Override in a subclass to send extra headers for `/check-credentials` only.
-     *
-     * @return array<string, string>
-     */
-    private function checkCredentialsHeaders(): array
-    {
-        return [];
+        return $this->context->http->post('/check-credentials', $dto->toApiPayload());
     }
 
     /**
@@ -63,92 +45,74 @@ final class CredentialsClient
      * {@see \TheMarketer\ApiClient\Exception\ApiException} (or a more specific exception) with the API `message` from the body.
      *
      * @throws GuzzleException
-     * @throws \JsonException
+     * @throws JsonException
      */
     public function checkApiCredentials(): array
     {
-        $request = $this->http->postRequest('/check-api-credentials', []);
-
-        return $this->http->decodeJson($this->http->sendJson($request));
+        return $this->context->http->post('/check-api-credentials');
     }
 
     /**
      * @throws GuzzleException
-     * @throws \JsonException
+     * @throws JsonException
      */
     public function getCosts(): array
     {
-        $request = $this->http->getRequest('/get_costs');
-        return $this->http->decodeJson($this->http->sendJson($request));
+        return $this->context->http->get('/get_costs');
     }
 
     /**
      * @throws GuzzleException
-     * @throws \JsonException
+     * @throws JsonException
      */
     public function getRealtimeVisitors(): array
     {
-        $request = $this->http->getRequest('/realtime_visitors');
-        return $this->http->decodeJson($this->http->sendJson($request));
+        return $this->context->http->get('/realtime_visitors');
     }
 
     /**
      * @throws GuzzleException
-     * @throws \JsonException
+     * @throws JsonException
      */
     public function getSmsCredit(): array
     {
-        $request = $this->http->getRequest('/check-sms-credit');
-        return $this->http->decodeJson($this->http->sendJson($request));
+        return $this->context->http->get('/check-sms-credit');
     }
 
     /**
      * @throws ValidationException
      * @throws GuzzleException
+     * @throws JsonException
      */
     public function getReferralLink(?string $email = null): string
     {
-        $dto = GetReferralLinkQuery::validateAndCreate([
-            'email' => $email,
-        ]);
+        $dto = ReferralLink::validateAndCreate(['email' => $email]);
 
-        $query = [];
-        if ($dto->email !== null) {
-            $query['email'] = $dto->email;
-        }
-
-        $request = $this->http->getRequest('/get-referral-link', $query);
-
-        return (string) $this->http->sendJson($request)->getBody();
+        $response = $this->context->http->get('/get-referral-link', $dto->toApiPayload(), json: false);
+        return $response->getBody()->getContents();
     }
 
     /**
      * @throws \Illuminate\Validation\ValidationException
      * @throws GuzzleException
-     * @throws \JsonException
+     * @throws JsonException
      */
     public function getDeliveryLogs(array $payload): array
     {
-        $dto = GetDeliveryLogsQuery::validateAndCreate($payload);
+        $dto = DeliveryLogs::validateAndCreate($payload);
 
-        $request = $this->http->getRequest('/delivery-logs', $dto->toApiPayload());
-        return $this->http->decodeJson($this->http->sendJson($request));
+        return $this->context->http->get('/delivery-logs', $dto->toApiPayload());
     }
 
     /**
      * @throws \Illuminate\Validation\ValidationException
      * @throws GuzzleException
-     * @throws \JsonException
+     * @throws JsonException
      */
     public function getEnteredAutomation(array $payload): array
     {
-        try {
-            $dto = GetEnteredAutomationQuery::validateAndCreate($payload);
+        $dto = EnteredAutomation::validateAndCreate($payload);
 
-            $request = $this->http->getRequest('/entered-automation', $dto->toApiPayload());
-            return $this->http->decodeJson($this->http->sendJson($request));
-        } catch (\InvalidArgumentException $e) {
-            throw new ValidationException($e->getMessage(), 422);
-        }
+        return $this->context->http->get('/entered-automation', $dto->toApiPayload());
     }
 }

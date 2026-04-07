@@ -9,56 +9,20 @@ use GuzzleHttp\Exception\GuzzleException;
 use GuzzleHttp\Handler\MockHandler;
 use GuzzleHttp\HandlerStack;
 use GuzzleHttp\Psr7\Response;
-use Illuminate\Validation\ValidationException as IlluminateValidationException;
 use NotificationService\Sdk\Internal\CampaignsApi;
-use Psr\Http\Message\RequestInterface;
+use TheMarketer\ApiClient\ApiGateway;
+use TheMarketer\ApiClient\Common\ApiContext;
 use TheMarketer\ApiClient\Common\Config;
 use TheMarketer\ApiClient\Exception\ValidationException;
 
 final class CampaignsApiTest extends TestCase
 {
-    private const BASE_URL = 'https://api.example.test';
-
-    private const DOMAIN_KEY = 'domain-1';
-
-    private const API_KEY = 'api-secret';
-
     /**
      * @return array{0: CampaignsApi, 1: \stdClass}
-     *
-     * @phpstan-param \stdClass&object{requests: list<RequestInterface>} $bucket
      */
     private function apiWithMockResponses(Response ...$responses): array
     {
-        $bucket = new \stdClass();
-        $bucket->requests = [];
-
-        $queue = [];
-        foreach ($responses as $response) {
-            $queue[] = function (RequestInterface $request, array $options) use ($bucket, $response): Response {
-                $bucket->requests[] = $request;
-
-                return $response;
-            };
-        }
-        $mock = new MockHandler($queue);
-        $client = new Client(['handler' => $mock]);
-
-        $api = new CampaignsApi(new \TheMarketer\ApiClient\HttpClient($client, new Config(self::DOMAIN_KEY, self::API_KEY), self::BASE_URL));
-
-        return [$api, $bucket];
-    }
-
-    /**
-     * @param \stdClass $bucket from {@see apiWithMockResponses()} with `requests` list
-     */
-    private function lastRequest(\stdClass $bucket): RequestInterface
-    {
-        $requests = $bucket->requests;
-        $this->assertIsArray($requests);
-        $this->assertNotEmpty($requests, 'Expected at least one HTTP request.');
-
-        return $requests[array_key_last($requests)];
+        return $this->createApiWithMock(CampaignsApi::class, ...$responses);
     }
 
     /**
@@ -70,8 +34,8 @@ final class CampaignsApiTest extends TestCase
             'type' => 'email',
             'mode' => 'regular',
             'sender' => [
-                'sender_name' => 'Shop',
-                'sender_email' => 'shop@example.com',
+                'name' => 'Shop',
+                'sender' => 'shop@example.com',
                 'reply_to' => 'support@example.com',
             ],
             'audience' => [
@@ -103,7 +67,7 @@ final class CampaignsApiTest extends TestCase
      * @throws GuzzleException
      * @throws \JsonException
      */
-    public function testListSendsGetWithAuthQuery(): void
+    public function testListSendsPostWithAuthQuery(): void
     {
         [$api, $container] = $this->apiWithMockResponses(
             new Response(200, [], '{"items":[]}'),
@@ -114,12 +78,12 @@ final class CampaignsApiTest extends TestCase
         $this->assertSame(['items' => []], $result);
 
         $request = $this->lastRequest($container);
-        $this->assertSame('GET', $request->getMethod());
+        $this->assertSame('POST', $request->getMethod());
         $this->assertStringEndsWith('/campaigns/list', $request->getUri()->getPath());
 
         parse_str($request->getUri()->getQuery(), $query);
-        $this->assertSame(self::API_KEY, $query['k']);
-        $this->assertSame(self::DOMAIN_KEY, $query['u']);
+        $this->assertSame(self::MOCK_API_KEY, $query['k']);
+        $this->assertSame(self::MOCK_DOMAIN, $query['u']);
     }
 
     /**
@@ -142,13 +106,13 @@ final class CampaignsApiTest extends TestCase
         $this->assertStringEndsWith('/campaigns/create', $request->getUri()->getPath());
 
         parse_str($request->getUri()->getQuery(), $query);
-        $this->assertSame(self::API_KEY, $query['k']);
-        $this->assertSame(self::DOMAIN_KEY, $query['u']);
+        $this->assertSame(self::MOCK_API_KEY, $query['k']);
+        $this->assertSame(self::MOCK_DOMAIN, $query['u']);
 
         $body = json_decode((string) $request->getBody(), true, 512, JSON_THROW_ON_ERROR);
         $this->assertSame('email', $body['type']);
         $this->assertSame('regular', $body['mode']);
-        $this->assertSame('Shop', $body['sender']['sender_name']);
+        $this->assertSame('Shop', $body['sender']['name']);
         $this->assertSame('all', $body['audience']['audience_type']);
         $this->assertSame('<p>Hi</p>', $body['content']['html']);
     }
@@ -170,24 +134,24 @@ final class CampaignsApiTest extends TestCase
         $request = $this->lastRequest($container);
         $this->assertSame('GET', $request->getMethod());
         $path = $request->getUri()->getPath();
-        $this->assertSame('/campaigns/foo%2Fbar/email/get-report', $path);
+        $this->assertStringEndsWith('/campaigns/foo/bar/email/get-report', $path);
 
         parse_str($request->getUri()->getQuery(), $query);
-        $this->assertSame(self::API_KEY, $query['k']);
-        $this->assertSame(self::DOMAIN_KEY, $query['u']);
+        $this->assertSame(self::MOCK_API_KEY, $query['k']);
+        $this->assertSame(self::MOCK_DOMAIN, $query['u']);
     }
 
     /**
      * @throws GuzzleException
      * @throws \JsonException
      */
-    public function testGetEmailReportAcceptsIntegerId(): void
+    public function testGetEmailReportAcceptsNumericStringId(): void
     {
         [$api, $container] = $this->apiWithMockResponses(
             new Response(200, [], '{}'),
         );
 
-        $api->getEmailReport(99);
+        $api->getEmailReport('99');
 
         $request = $this->lastRequest($container);
         $this->assertStringContainsString('/campaigns/99/email/get-report', $request->getUri()->getPath());
@@ -212,8 +176,8 @@ final class CampaignsApiTest extends TestCase
         $this->assertStringEndsWith('/get-latest-campaign', $request->getUri()->getPath());
 
         parse_str($request->getUri()->getQuery(), $query);
-        $this->assertSame(self::API_KEY, $query['k']);
-        $this->assertSame(self::DOMAIN_KEY, $query['u']);
+        $this->assertSame(self::MOCK_API_KEY, $query['k']);
+        $this->assertSame(self::MOCK_DOMAIN, $query['u']);
         $this->assertArrayNotHasKey('limit', $query);
     }
 
@@ -237,7 +201,8 @@ final class CampaignsApiTest extends TestCase
     public function testListThrowsWhenDomainKeyMissing(): void
     {
         $client = new Client(['handler' => HandlerStack::create(new MockHandler([new Response(200)]))]);
-        $api = new CampaignsApi(new \TheMarketer\ApiClient\HttpClient($client, new Config('', self::API_KEY), self::BASE_URL));
+        $config = new Config('', self::MOCK_API_KEY, self::MOCK_BASE_URL);
+        $api = new CampaignsApi(new ApiContext(new ApiGateway($config, 0, $client), $config));
 
         $this->expectException(ValidationException::class);
         $this->expectExceptionMessage('Customer ID not provided.');
@@ -248,7 +213,8 @@ final class CampaignsApiTest extends TestCase
     public function testListThrowsWhenApiKeyMissing(): void
     {
         $client = new Client(['handler' => HandlerStack::create(new MockHandler([new Response(200)]))]);
-        $api = new CampaignsApi(new \TheMarketer\ApiClient\HttpClient($client, new Config(self::DOMAIN_KEY, ''), self::BASE_URL));
+        $config = new Config(self::MOCK_DOMAIN, '', self::MOCK_BASE_URL);
+        $api = new CampaignsApi(new ApiContext(new ApiGateway($config, 0, $client), $config));
 
         $this->expectException(ValidationException::class);
         $this->expectExceptionMessage('Rest key not provided.');
@@ -260,16 +226,18 @@ final class CampaignsApiTest extends TestCase
     {
         [$api] = $this->apiWithMockResponses();
 
-        $this->expectException(IlluminateValidationException::class);
+        $this->expectException(ValidationException::class);
 
-        $api->create(['type' => 'invalid-type']);
+        $payload = $this->minimalCreateCampaignPayload();
+        $payload['type'] = 'invalid-type';
+        $api->create($payload);
     }
 
     public function testGetLatestCampaignThrowsWhenLimitBelowMinimum(): void
     {
         [$api] = $this->apiWithMockResponses();
 
-        $this->expectException(IlluminateValidationException::class);
+        $this->expectException(ValidationException::class);
 
         $api->getLatestCampaign(0);
     }

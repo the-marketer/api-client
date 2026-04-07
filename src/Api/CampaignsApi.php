@@ -9,19 +9,17 @@ use JsonException;
 use TheMarketer\ApiClient\Common\AbstractApi;
 use TheMarketer\ApiClient\DTO\Campaigns\CampaignId;
 use TheMarketer\ApiClient\DTO\Campaigns\CreateCampaign;
-use TheMarketer\ApiClient\DTO\Campaigns\GetLatestCampaignQuery;
+use TheMarketer\ApiClient\DTO\Campaigns\LatestCampaign;
 use TheMarketer\ApiClient\DTO\Campaigns\ListCampaign;
 use TheMarketer\ApiClient\Exception\ApiException;
 use TheMarketer\ApiClient\Exception\CustomerNotFoundException;
 use TheMarketer\ApiClient\Exception\MethodNotAllowedException;
 use TheMarketer\ApiClient\Exception\UnauthorizedException;
 use TheMarketer\ApiClient\Exception\ValidationException;
-use TheMarketer\ApiClient\ApiGateway;
 
 class CampaignsApi extends AbstractApi
 {
     private const CAMPAIGNS_ENDPOINT = '/campaigns';
-
 
     /**
      * @return array<string, mixed>
@@ -90,7 +88,7 @@ class CampaignsApi extends AbstractApi
      */
     public function getLatestCampaign(?int $limit = null): array
     {
-        $dto = GetLatestCampaignQuery::validateAndCreate(['limit' => $limit]);
+        $dto = LatestCampaign::validateAndCreate(['limit' => $limit]);
 
         return $this->context->http->get('/get-latest-campaign', $dto->toApiPayload());
     }

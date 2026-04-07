@@ -4,24 +4,23 @@ declare(strict_types=1);
 
 namespace TheMarketer\ApiClient\DTO\Products;
 
-use Spatie\LaravelData\Attributes\Validation\Required;
-use Spatie\LaravelData\Attributes\Validation\Rule;
-use Spatie\LaravelData\Attributes\Validation\Sometimes;
-use Spatie\LaravelData\Data;
+use Symfony\Component\Validator\Constraints as Assert;
+use TheMarketer\ApiClient\Common\AbstractPayload;
 
-class SyncBrand extends Data
+class SyncBrand extends AbstractPayload
 {
     public function __construct(
-        #[Required]
+        #[Assert\NotBlank]
+        #[Assert\Type('string')]
         public string $id,
-        #[Required]
+        #[Assert\NotBlank]
+        #[Assert\Type('string')]
         public string $name,
-        #[Required]
-        #[Rule('url')]
+        #[Assert\NotBlank]
+        #[Assert\Type('string')]
         public string $url,
-        #[Required]
-        #[Rule('url')]
+        #[Assert\NotBlank]
+        #[Assert\Type('string')]
         public string $image_url,
-    ) {
-    }
+    ) {}
 }

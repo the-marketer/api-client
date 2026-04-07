@@ -6,6 +6,7 @@ namespace NotificationService\Sdk\Internal;
 
 use GuzzleHttp\Exception\GuzzleException;
 use JsonException;
+use TheMarketer\ApiClient\Common\AbstractApi;
 use TheMarketer\ApiClient\DTO\AppPush\RemoveAppPushToken;
 use TheMarketer\ApiClient\DTO\AppPush\SetAppPushToken;
 use TheMarketer\ApiClient\Exception\ApiException;
@@ -13,16 +14,10 @@ use TheMarketer\ApiClient\Exception\CustomerNotFoundException;
 use TheMarketer\ApiClient\Exception\MethodNotAllowedException;
 use TheMarketer\ApiClient\Exception\UnauthorizedException;
 use TheMarketer\ApiClient\Exception\ValidationException;
-use TheMarketer\ApiClient\ApiGateway;
 
-class AppPushApi
+class AppPushApi extends AbstractApi
 {
     private const APP_PUSH_URL = '/app-push-notifications/token';
-
-    public function __construct(
-        private readonly ApiGateway $api,
-    ) {
-    }
 
     /**
      * @return array<string, mixed>
@@ -41,10 +36,9 @@ class AppPushApi
             'email' => $email,
             'token' => $token,
             'type' => $type,
-        ])->toArray();
+        ]);
 
-        $request = $this->api->postRequest(self::APP_PUSH_URL . '/set', $dto);
-        return $this->api->decodeJson($this->api->sendJson($request));
+        return $this->context->http->post(self::APP_PUSH_URL . '/set', $dto->toApiPayload());
     }
 
     /**
@@ -65,7 +59,6 @@ class AppPushApi
             'type' => $type,
         ]);
 
-        $request = $this->api->postRequest(self::APP_PUSH_URL . '/remove', $dto->toArray());
-        return $this->api->decodeJson($this->api->sendJson($request));
+        return $this->context->http->post(self::APP_PUSH_URL . '/remove', $dto->toApiPayload());
     }
 }

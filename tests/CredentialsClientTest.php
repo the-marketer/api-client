@@ -9,114 +9,81 @@ use GuzzleHttp\Exception\GuzzleException;
 use GuzzleHttp\Handler\MockHandler;
 use GuzzleHttp\HandlerStack;
 use GuzzleHttp\Psr7\Response;
-use Illuminate\Validation\ValidationException as IlluminateValidationException;
 use NotificationService\Sdk\Internal\CredentialsClient;
 use Psr\Http\Message\RequestInterface;
+use TheMarketer\ApiClient\ApiGateway;
+use TheMarketer\ApiClient\Common\ApiContext;
 use TheMarketer\ApiClient\Common\Config;
 use TheMarketer\ApiClient\Exception\ValidationException;
-use TheMarketer\ApiClient\HttpClient;
 
 final class CredentialsClientTest extends TestCase
 {
-    private const BASE_URL = 'https://api.example.test';
-
-    private const DOMAIN_KEY = 'domain-1';
-
-    private const API_KEY = 'api-secret';
-
     /**
      * @return array{0: CredentialsClient, 1: \stdClass}
-     *
-     * @phpstan-param \stdClass&object{requests: list<RequestInterface>} $bucket
      */
     private function clientWithMockResponses(Response ...$responses): array
     {
-        $bucket = new \stdClass();
-        $bucket->requests = [];
-
-        $queue = [];
-        foreach ($responses as $response) {
-            $queue[] = function (RequestInterface $request, array $options) use ($bucket, $response): Response {
-                $bucket->requests[] = $request;
-
-                return $response;
-            };
-        }
-        $mock = new MockHandler($queue);
-        $http = new Client(['handler' => $mock]);
-
-        $client = new CredentialsClient(
-            new HttpClient($http, new Config(self::DOMAIN_KEY, self::API_KEY), self::BASE_URL),
-            null,
-        );
-
-        return [$client, $bucket];
-    }
-
-    /**
-     * @param \stdClass $bucket from {@see clientWithMockResponses()} with `requests` list
-     */
-    private function lastRequest(\stdClass $bucket): RequestInterface
-    {
-        $requests = $bucket->requests;
-        $this->assertIsArray($requests);
-        $this->assertNotEmpty($requests, 'Expected at least one HTTP request.');
-
-        return $requests[array_key_last($requests)];
+        return $this->createApiWithMock(CredentialsClient::class, ...$responses);
     }
 
     /**
      * @throws GuzzleException
      * @throws \JsonException
      */
-    /**
-     * @throws GuzzleException
-     */
-    public function testCheckCredentialsSendsPostWithKRUQuery(): void
+    public function testCheckCredentialsSendsPostWithKruInJsonBodyAndAuthQuery(): void
     {
-        $bucket = new \stdClass();
-        $bucket->requests = [];
-
-        $mock = new MockHandler([
-            function (RequestInterface $request, array $options) use ($bucket): Response {
-                $bucket->requests[] = $request;
-
-                return new Response(200, [], '{"success":true}');
-            },
-        ]);
-        $http = new Client(['handler' => $mock]);
-
-        $client = new CredentialsClient(
-            new HttpClient($http, new Config(self::DOMAIN_KEY, self::API_KEY), self::BASE_URL),
-            'tracking-key-xyz',
+        [$client, $container] = $this->clientWithMockResponses(
+            new Response(200, [], '{"success":true}'),
         );
 
-        $result = $client->checkCredentials();
+        $result = $client->checkCredentials('tracking-key-xyz');
 
         $this->assertSame(['success' => true], $result);
 
-        $request = $this->lastRequest($bucket);
+        $request = $this->lastRequest($container);
         $this->assertSame('POST', $request->getMethod());
         $this->assertStringEndsWith('/check-credentials', $request->getUri()->getPath());
 
         parse_str($request->getUri()->getQuery(), $query);
-        $this->assertSame('tracking-key-xyz', $query['k']);
-        $this->assertSame(self::API_KEY, $query['r']);
-        $this->assertSame(self::DOMAIN_KEY, $query['u']);
-    }
+        $this->assertSame(self::MOCK_API_KEY, $query['k']);
+        $this->assertSame(self::MOCK_DOMAIN, $query['u']);
 
-    public function testCheckCredentialsThrowsWhenTrackingKeyMissing(): void
-    {
-        $client = new Client(['handler' => HandlerStack::create(new MockHandler([new Response(200)]))]);
-        $api = new CredentialsClient(new HttpClient($client, new Config(self::DOMAIN_KEY, self::API_KEY), self::BASE_URL), null);
-
-        $this->expectException(IlluminateValidationException::class);
-
-        $api->checkCredentials();
+        $body = json_decode((string) $request->getBody(), true, 512, JSON_THROW_ON_ERROR);
+        $this->assertSame([
+            'k' => 'tracking-key-xyz',
+            'r' => self::MOCK_API_KEY,
+            'u' => self::MOCK_DOMAIN,
+        ], $body);
     }
 
     /**
      * @throws GuzzleException
+     * @throws \JsonException
+     */
+    public function testCheckApiCredentialsSendsPostWithoutJsonBody(): void
+    {
+        [$client, $container] = $this->clientWithMockResponses(
+            new Response(200, [], '{"valid":true}'),
+        );
+
+        $result = $client->checkApiCredentials();
+
+        $this->assertSame(['valid' => true], $result);
+
+        $request = $this->lastRequest($container);
+        $this->assertSame('POST', $request->getMethod());
+        $this->assertStringEndsWith('/check-api-credentials', $request->getUri()->getPath());
+
+        parse_str($request->getUri()->getQuery(), $query);
+        $this->assertSame(self::MOCK_API_KEY, $query['k']);
+        $this->assertSame(self::MOCK_DOMAIN, $query['u']);
+
+        $this->assertSame('', (string) $request->getBody());
+    }
+
+    /**
+     * @throws GuzzleException
+     * @throws \JsonException
      */
     public function testGetCostsSendsGetRequestAndReturnsDecodedJson(): void
     {
@@ -133,8 +100,8 @@ final class CredentialsClientTest extends TestCase
         $this->assertStringEndsWith('/get_costs', $request->getUri()->getPath());
 
         parse_str($request->getUri()->getQuery(), $query);
-        $this->assertSame(self::API_KEY, $query['k']);
-        $this->assertSame(self::DOMAIN_KEY, $query['u']);
+        $this->assertSame(self::MOCK_API_KEY, $query['k']);
+        $this->assertSame(self::MOCK_DOMAIN, $query['u']);
     }
 
     /**
@@ -156,8 +123,8 @@ final class CredentialsClientTest extends TestCase
         $this->assertStringEndsWith('/realtime_visitors', $request->getUri()->getPath());
 
         parse_str($request->getUri()->getQuery(), $query);
-        $this->assertSame(self::API_KEY, $query['k']);
-        $this->assertSame(self::DOMAIN_KEY, $query['u']);
+        $this->assertSame(self::MOCK_API_KEY, $query['k']);
+        $this->assertSame(self::MOCK_DOMAIN, $query['u']);
     }
 
     /**
@@ -179,8 +146,8 @@ final class CredentialsClientTest extends TestCase
         $this->assertStringEndsWith('/check-sms-credit', $request->getUri()->getPath());
 
         parse_str($request->getUri()->getQuery(), $query);
-        $this->assertSame(self::API_KEY, $query['k']);
-        $this->assertSame(self::DOMAIN_KEY, $query['u']);
+        $this->assertSame(self::MOCK_API_KEY, $query['k']);
+        $this->assertSame(self::MOCK_DOMAIN, $query['u']);
     }
 
     /**
@@ -201,9 +168,8 @@ final class CredentialsClientTest extends TestCase
         $this->assertStringEndsWith('/get-referral-link', $request->getUri()->getPath());
 
         parse_str($request->getUri()->getQuery(), $query);
-        $this->assertSame(self::API_KEY, $query['k']);
-        $this->assertSame(self::DOMAIN_KEY, $query['u']);
-        $this->assertArrayNotHasKey('email', $query);
+        $this->assertSame(self::MOCK_API_KEY, $query['k']);
+        $this->assertSame(self::MOCK_DOMAIN, $query['u']);
     }
 
     /**
@@ -244,8 +210,8 @@ final class CredentialsClientTest extends TestCase
 
         parse_str($request->getUri()->getQuery(), $query);
         $this->assertSame('user@gmail.com', $query['email']);
-        $this->assertSame(self::API_KEY, $query['k']);
-        $this->assertSame(self::DOMAIN_KEY, $query['u']);
+        $this->assertSame(self::MOCK_API_KEY, $query['k']);
+        $this->assertSame(self::MOCK_DOMAIN, $query['u']);
     }
 
     /**
@@ -294,8 +260,8 @@ final class CredentialsClientTest extends TestCase
 
         parse_str($request->getUri()->getQuery(), $query);
         $this->assertSame('2025-03-15', $query['date']);
-        $this->assertSame(self::API_KEY, $query['k']);
-        $this->assertSame(self::DOMAIN_KEY, $query['u']);
+        $this->assertSame(self::MOCK_API_KEY, $query['k']);
+        $this->assertSame(self::MOCK_DOMAIN, $query['u']);
     }
 
     /**
@@ -323,7 +289,8 @@ final class CredentialsClientTest extends TestCase
     public function testGetCostsThrowsWhenDomainKeyMissing(): void
     {
         $client = new Client(['handler' => HandlerStack::create(new MockHandler([new Response(200)]))]);
-        $api = new CredentialsClient(new HttpClient($client, new Config('', self::API_KEY), self::BASE_URL));
+        $config = new Config('', self::MOCK_API_KEY, self::MOCK_BASE_URL);
+        $api = new CredentialsClient(new ApiContext(new ApiGateway($config, 0, $client), $config));
 
         $this->expectException(ValidationException::class);
         $this->expectExceptionMessage('Customer ID not provided.');
@@ -334,7 +301,8 @@ final class CredentialsClientTest extends TestCase
     public function testGetCostsThrowsWhenApiKeyMissing(): void
     {
         $client = new Client(['handler' => HandlerStack::create(new MockHandler([new Response(200)]))]);
-        $api = new CredentialsClient(new HttpClient($client, new Config(self::DOMAIN_KEY, ''), self::BASE_URL));
+        $config = new Config(self::MOCK_DOMAIN, '', self::MOCK_BASE_URL);
+        $api = new CredentialsClient(new ApiContext(new ApiGateway($config, 0, $client), $config));
 
         $this->expectException(ValidationException::class);
         $this->expectExceptionMessage('Rest key not provided.');
@@ -342,11 +310,20 @@ final class CredentialsClientTest extends TestCase
         $api->getCosts();
     }
 
+    public function testCheckCredentialsThrowsWhenTrackingKeyMissing(): void
+    {
+        [$client] = $this->clientWithMockResponses();
+
+        $this->expectException(ValidationException::class);
+
+        $client->checkCredentials('');
+    }
+
     public function testGetDeliveryLogsThrowsWhenEmailInvalid(): void
     {
         [$client] = $this->clientWithMockResponses();
 
-        $this->expectException(IlluminateValidationException::class);
+        $this->expectException(ValidationException::class);
 
         $client->getDeliveryLogs(['email' => 'not-an-email']);
     }
@@ -355,7 +332,7 @@ final class CredentialsClientTest extends TestCase
     {
         [$client] = $this->clientWithMockResponses();
 
-        $this->expectException(IlluminateValidationException::class);
+        $this->expectException(ValidationException::class);
 
         $client->getEnteredAutomation(['date' => '15-03-2025']);
     }

@@ -12,10 +12,10 @@ class CreateCampaignSender extends AbstractPayload
     public function __construct(
         #[Assert\NotBlank]
         #[Assert\Type('string')]
-        public string $sender_name,
+        public string $name,
         #[Assert\NotBlank]
         #[Assert\Email]
-        public string $sender_email,
+        public string $sender,
         #[Assert\NotBlank]
         #[Assert\Email]
         public string $reply_to,

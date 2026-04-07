@@ -9,57 +9,20 @@ use GuzzleHttp\Exception\GuzzleException;
 use GuzzleHttp\Handler\MockHandler;
 use GuzzleHttp\HandlerStack;
 use GuzzleHttp\Psr7\Response;
-use Illuminate\Validation\ValidationException as IlluminateValidationException;
 use NotificationService\Sdk\Internal\SubscribersApi;
-use Psr\Http\Message\RequestInterface;
+use TheMarketer\ApiClient\ApiGateway;
+use TheMarketer\ApiClient\Common\ApiContext;
 use TheMarketer\ApiClient\Common\Config;
 use TheMarketer\ApiClient\Exception\ValidationException;
 
 final class SubscribersApiTest extends TestCase
 {
-    private const BASE_URL = 'https://api.example.test';
-
-    private const DOMAIN_KEY = 'domain-1';
-
-    private const API_KEY = 'api-secret';
-
     /**
      * @return array{0: SubscribersApi, 1: \stdClass}
-     *
-     * The second element is a bucket with a `requests` property (list of captured requests).
-     * An object is used so the list remains shared after the helper returns (PHP arrays are returned by value).
      */
     private function apiWithMockResponses(Response ...$responses): array
     {
-        $bucket = new \stdClass();
-        $bucket->requests = [];
-
-        $queue = [];
-        foreach ($responses as $response) {
-            $queue[] = function (RequestInterface $request, array $options) use ($bucket, $response): Response {
-                $bucket->requests[] = $request;
-
-                return $response;
-            };
-        }
-        $mock = new MockHandler($queue);
-        $client = new Client(['handler' => $mock]);
-
-        $api = new SubscribersApi(new \TheMarketer\ApiClient\HttpClient($client, new Config(self::DOMAIN_KEY, self::API_KEY), self::BASE_URL));
-
-        return [$api, $bucket];
-    }
-
-    /**
-     * @param \stdClass $bucket from {@see apiWithMockResponses()} with `requests` list
-     */
-    private function lastRequest(\stdClass $bucket): RequestInterface
-    {
-        $requests = $bucket->requests;
-        $this->assertIsArray($requests);
-        $this->assertNotEmpty($requests, 'Expected at least one HTTP request.');
-
-        return $requests[array_key_last($requests)];
+        return $this->createApiWithMock(SubscribersApi::class, ...$responses);
     }
 
     /**
@@ -81,8 +44,8 @@ final class SubscribersApiTest extends TestCase
         $this->assertStringEndsWith('/status_subscriber', $request->getUri()->getPath());
 
         parse_str($request->getUri()->getQuery(), $query);
-        $this->assertSame(self::API_KEY, $query['k']);
-        $this->assertSame(self::DOMAIN_KEY, $query['u']);
+        $this->assertSame(self::MOCK_API_KEY, $query['k']);
+        $this->assertSame(self::MOCK_DOMAIN, $query['u']);
         $this->assertSame('user@example.com', $query['email']);
     }
 
@@ -105,8 +68,8 @@ final class SubscribersApiTest extends TestCase
         $this->assertStringEndsWith('/unsubscribed_emails', $request->getUri()->getPath());
 
         parse_str($request->getUri()->getQuery(), $query);
-        $this->assertSame(self::API_KEY, $query['k']);
-        $this->assertSame(self::DOMAIN_KEY, $query['u']);
+        $this->assertSame(self::MOCK_API_KEY, $query['k']);
+        $this->assertSame(self::MOCK_DOMAIN, $query['u']);
         $this->assertSame('2024-01-01', $query['date_from']);
         $this->assertSame('2024-01-31', $query['date_to']);
     }
@@ -123,7 +86,7 @@ final class SubscribersApiTest extends TestCase
 
         $result = $api->addSubscriber([
             'email' => 'user@example.com',
-            'addTags' => 'tag1,tag2',
+            'add_tags' => 'tag1,tag2',
             'firstname' => 'Jane',
             'lastname' => 'Doe',
             'phone' => '+40123456789',
@@ -141,8 +104,8 @@ final class SubscribersApiTest extends TestCase
         $this->assertStringEndsWith('/add_subscriber', $request->getUri()->getPath());
 
         parse_str($request->getUri()->getQuery(), $query);
-        $this->assertSame(self::API_KEY, $query['k']);
-        $this->assertSame(self::DOMAIN_KEY, $query['u']);
+        $this->assertSame(self::MOCK_API_KEY, $query['k']);
+        $this->assertSame(self::MOCK_DOMAIN, $query['u']);
 
         $body = json_decode((string) $request->getBody(), true, 512, JSON_THROW_ON_ERROR);
         $this->assertSame([
@@ -224,7 +187,7 @@ final class SubscribersApiTest extends TestCase
     {
         [$api] = $this->apiWithMockResponses();
 
-        $this->expectException(IlluminateValidationException::class);
+        $this->expectException(ValidationException::class);
 
         $api->addSubscriberBulk([]);
     }
@@ -237,7 +200,7 @@ final class SubscribersApiTest extends TestCase
     {
         [$api] = $this->apiWithMockResponses();
 
-        $this->expectException(IlluminateValidationException::class);
+        $this->expectException(\TypeError::class);
 
         /** @phpstan-ignore-next-line */
         $api->addSubscriberBulk(['not-an-array']);
@@ -247,14 +210,14 @@ final class SubscribersApiTest extends TestCase
     {
         [$api] = $this->apiWithMockResponses();
 
-        $this->expectException(IlluminateValidationException::class);
+        $this->expectException(\TypeError::class);
 
         $api->addSubscriberBulk([
             ['email' => 'a@x.com', 'attributes' => 'not-array'],
         ]);
     }
 
-    public function testRemoveSubscriberSendsPostWithEmailInQueryAndOptionalChannels(): void
+    public function testRemoveSubscriberSendsPostJsonBodyWithEmailAndOptionalChannels(): void
     {
         [$api, $container] = $this->apiWithMockResponses(
             new Response(200, [], '{"removed":true}'),
@@ -269,10 +232,11 @@ final class SubscribersApiTest extends TestCase
         $this->assertStringEndsWith('/remove_subscriber', $request->getUri()->getPath());
 
         parse_str($request->getUri()->getQuery(), $query);
-        $this->assertSame(self::API_KEY, $query['k']);
-        $this->assertSame(self::DOMAIN_KEY, $query['u']);
-        $this->assertSame('user@example.com', $query['email']);
-        $this->assertSame('email', $query['channels']);
+        $this->assertSame(self::MOCK_API_KEY, $query['k']);
+        $this->assertSame(self::MOCK_DOMAIN, $query['u']);
+
+        $body = json_decode((string) $request->getBody(), true, 512, JSON_THROW_ON_ERROR);
+        $this->assertSame(['email' => 'user@example.com', 'channels' => 'email'], $body);
     }
 
     public function testAnonymizeEmailSendsPostJsonBody(): void
@@ -291,7 +255,7 @@ final class SubscribersApiTest extends TestCase
         $this->assertSame(['email' => 'old@example.com'], $body);
     }
 
-    public function testUpdateTagsSendsPostWithQueryParams(): void
+    public function testUpdateTagsSendsPostJsonBody(): void
     {
         [$api, $container] = $this->apiWithMockResponses(
             new Response(200, [], '{"tags":[]}'),
@@ -304,18 +268,23 @@ final class SubscribersApiTest extends TestCase
         $this->assertStringEndsWith('/update-tags', $request->getUri()->getPath());
 
         parse_str($request->getUri()->getQuery(), $query);
-        $this->assertSame(self::API_KEY, $query['k']);
-        $this->assertSame(self::DOMAIN_KEY, $query['u']);
-        $this->assertSame('u@x.com', $query['email']);
-        $this->assertSame('1', (string) $query['overwrite_existing']);
-        $this->assertSame(['1', 'news'], $query['add_tags']);
-        $this->assertSame(['old'], $query['remove_tags']);
+        $this->assertSame(self::MOCK_API_KEY, $query['k']);
+        $this->assertSame(self::MOCK_DOMAIN, $query['u']);
+
+        $body = json_decode((string) $request->getBody(), true, 512, JSON_THROW_ON_ERROR);
+        $this->assertSame([
+            'email' => 'u@x.com',
+            'overwrite_existing' => 1,
+            'add_tags' => [1, 'news'],
+            'remove_tags' => ['old'],
+        ], $body);
     }
 
     public function testThrowsWhenDomainKeyMissing(): void
     {
         $client = new Client(['handler' => HandlerStack::create(new MockHandler([new Response(200)]))]);
-        $api = new SubscribersApi(new \TheMarketer\ApiClient\HttpClient($client, new Config('', self::API_KEY), self::BASE_URL));
+        $config = new Config('', self::MOCK_API_KEY, self::MOCK_BASE_URL);
+        $api = new SubscribersApi(new ApiContext(new ApiGateway($config, 0, $client), $config));
 
         $this->expectException(ValidationException::class);
         $this->expectExceptionMessage('Customer ID not provided.');
@@ -327,7 +296,7 @@ final class SubscribersApiTest extends TestCase
     {
         [$api] = $this->apiWithMockResponses();
 
-        $this->expectException(IlluminateValidationException::class);
+        $this->expectException(ValidationException::class);
 
         $api->statusSubscriber('   ');
     }
@@ -335,7 +304,8 @@ final class SubscribersApiTest extends TestCase
     public function testThrowsWhenApiKeyMissing(): void
     {
         $client = new Client(['handler' => HandlerStack::create(new MockHandler([new Response(200)]))]);
-        $api = new SubscribersApi(new \TheMarketer\ApiClient\HttpClient($client, new Config(self::DOMAIN_KEY, ''), self::BASE_URL));
+        $config = new Config(self::MOCK_DOMAIN, '', self::MOCK_BASE_URL);
+        $api = new SubscribersApi(new ApiContext(new ApiGateway($config, 0, $client), $config));
 
         $this->expectException(ValidationException::class);
         $this->expectExceptionMessage('Rest key not provided.');
@@ -362,8 +332,8 @@ final class SubscribersApiTest extends TestCase
         $this->assertStringEndsWith('/unsubscribed_emails', $request->getUri()->getPath());
 
         parse_str($request->getUri()->getQuery(), $query);
-        $this->assertSame(self::API_KEY, $query['k']);
-        $this->assertSame(self::DOMAIN_KEY, $query['u']);
+        $this->assertSame(self::MOCK_API_KEY, $query['k']);
+        $this->assertSame(self::MOCK_DOMAIN, $query['u']);
         $this->assertArrayNotHasKey('date_from', $query);
         $this->assertArrayNotHasKey('date_to', $query);
     }
@@ -428,8 +398,8 @@ final class SubscribersApiTest extends TestCase
         $this->assertStringEndsWith('/subscribers-evolution', $request->getUri()->getPath());
 
         parse_str($request->getUri()->getQuery(), $query);
-        $this->assertSame(self::API_KEY, $query['k']);
-        $this->assertSame(self::DOMAIN_KEY, $query['u']);
+        $this->assertSame(self::MOCK_API_KEY, $query['k']);
+        $this->assertSame(self::MOCK_DOMAIN, $query['u']);
     }
 
     /**
@@ -490,7 +460,7 @@ final class SubscribersApiTest extends TestCase
 
         $request = $this->lastRequest($container);
         $body = json_decode((string) $request->getBody(), true, 512, JSON_THROW_ON_ERROR);
-        $this->assertSame(['phone' => '+40 700 000 000'], $body);
+        $this->assertSame(['phone' => ' +40 700 000 000 '], $body);
     }
 
     public function testDeleteSubscriberSendsPostJsonWithEmailAndPhone(): void
@@ -516,7 +486,7 @@ final class SubscribersApiTest extends TestCase
     {
         [$api] = $this->apiWithMockResponses();
 
-        $this->expectException(IlluminateValidationException::class);
+        $this->expectException(ValidationException::class);
 
         $api->deleteSubscriber([]);
     }
@@ -534,7 +504,7 @@ final class SubscribersApiTest extends TestCase
         $this->assertSame(['phone' => '+40700000000'], $body);
     }
 
-    public function testRemoveSubscriberOmitsChannelsFromQueryWhenNull(): void
+    public function testRemoveSubscriberOmitsChannelsFromBodyWhenNull(): void
     {
         [$api, $container] = $this->apiWithMockResponses(
             new Response(200, [], '{}'),
@@ -543,9 +513,8 @@ final class SubscribersApiTest extends TestCase
         $api->removeSubscriber('only@example.com');
 
         $request = $this->lastRequest($container);
-        parse_str($request->getUri()->getQuery(), $query);
-        $this->assertSame('only@example.com', $query['email']);
-        $this->assertArrayNotHasKey('channels', $query);
+        $body = json_decode((string) $request->getBody(), true, 512, JSON_THROW_ON_ERROR);
+        $this->assertSame(['email' => 'only@example.com'], $body);
     }
 
     public function testUpdateTagsSendsPostWithEmailOnlyWhenTagListsEmpty(): void
@@ -559,10 +528,28 @@ final class SubscribersApiTest extends TestCase
         $request = $this->lastRequest($container);
         $this->assertStringEndsWith('/update-tags', $request->getUri()->getPath());
 
-        parse_str($request->getUri()->getQuery(), $query);
-        $this->assertSame('plain@example.com', $query['email']);
-        $this->assertArrayNotHasKey('add_tags', $query);
-        $this->assertArrayNotHasKey('remove_tags', $query);
-        $this->assertArrayNotHasKey('overwrite_existing', $query);
+        $body = json_decode((string) $request->getBody(), true, 512, JSON_THROW_ON_ERROR);
+        $this->assertSame(['email' => 'plain@example.com'], $body);
+    }
+
+    /**
+     * @throws GuzzleException
+     * @throws \JsonException
+     */
+    public function testAddDelegatesToAddSubscriber(): void
+    {
+        [$api, $container] = $this->apiWithMockResponses(
+            new Response(200, [], '{"ok":true}'),
+        );
+
+        $result = $api->add(['email' => 'alias@example.com']);
+
+        $this->assertSame(['ok' => true], $result);
+
+        $request = $this->lastRequest($container);
+        $this->assertSame('POST', $request->getMethod());
+        $this->assertStringEndsWith('/add_subscriber', $request->getUri()->getPath());
+        $body = json_decode((string) $request->getBody(), true, 512, JSON_THROW_ON_ERROR);
+        $this->assertSame(['email' => 'alias@example.com'], $body);
     }
 }

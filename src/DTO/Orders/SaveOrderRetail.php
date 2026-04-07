@@ -10,7 +10,7 @@ use Symfony\Component\Validator\Constraints as Assert;
 use TheMarketer\ApiClient\Common\AbstractPayload;
 use TheMarketer\ApiClient\Common\PayloadArrayNormalizer;
 
-class SaveOrder extends AbstractPayload
+class SaveOrderRetail extends AbstractPayload
 {
     /**
      * @param list<SaveOrderProductLine> $products
@@ -58,15 +58,26 @@ class SaveOrder extends AbstractPayload
         #[Assert\Count(min: 1, minMessage: 'products must not be empty.')]
         #[Assert\Valid]
         public array $products,
-    ) {
-    }
+        #[Assert\Positive]
+        #[Assert\Type('integer')]
+        public int $store_id,
+        #[Assert\NotBlank]
+        #[Assert\Type('string')]
+        public string $store_name,
+        #[Assert\NotBlank]
+        #[Assert\Type('string')]
+        public string $store_city,
+        #[Assert\NotBlank]
+        #[Assert\Type('string')]
+        public string $store_country,
+    ) {}
 
     public static function validateAndCreate(array $data): static
     {
         $data = PayloadArrayNormalizer::trimStringFields($data, ['email_address']);
         $data = PayloadArrayNormalizer::coerceNumericStrings(
             $data,
-            ['number'],
+            ['number', 'store_id'],
             ['discount_value', 'shipping', 'tax', 'total_value'],
         );
         $data['products'] = array_map(

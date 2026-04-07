@@ -4,53 +4,54 @@ declare(strict_types=1);
 
 namespace TheMarketer\ApiClient\DTO\Reviews;
 
-use Spatie\LaravelData\Attributes\Validation\Email;
-use Spatie\LaravelData\Attributes\Validation\Required;
-use Spatie\LaravelData\Attributes\Validation\Rule;
-use Spatie\LaravelData\Data;
+use Symfony\Component\Validator\Constraints as Assert;
 use TheMarketer\ApiClient\Common\AbstractPayload;
 
 class MerchantAddReview extends AbstractPayload
 {
     public function __construct(
-        #[Required]
-        #[Email]
+        #[Assert\NotBlank]
+        #[Assert\Email]
         public string $email,
-        #[Rule('required')]
+        #[Assert\NotBlank]
+        #[Assert\Type(type: ['int', 'string'])]
         public string|int $product_id,
-        #[Rule('nullable', 'string')]
+        #[Assert\Type('string')]
         public ?string $name = null,
-        #[Rule('nullable', 'string')]
+        #[Assert\Type('string')]
         public ?string $date_created = null,
-        #[Rule('nullable', 'integer', 'min:0')]
+        #[Assert\PositiveOrZero]
+        #[Assert\Type('integer')]
         public ?int $rating = null,
-        #[Rule('nullable', 'string')]
+        #[Assert\Type('string')]
         public ?string $content = null,
-    ) {
+    ) {}
+
+    public static function validateAndCreate(array $data): static
+    {
+        if (array_key_exists('email', $data) && is_string($data['email'])) {
+            $data['email'] = trim($data['email']);
+        }
+
+        if (array_key_exists('rating', $data) && $data['rating'] !== null && is_string($data['rating']) && is_numeric($data['rating'])) {
+            $data['rating'] = (int) $data['rating'];
+        }
+
+        return parent::validateAndCreate($data);
     }
-    
-    public function toApiPayload(): array{
-        $body = [
+
+    /**
+     * @return array<string, mixed>
+     */
+    public function toApiPayload(): array
+    {
+        return self::filterNonEmpty([
             'email' => strtolower(trim($this->email)),
             'product_id' => (string) $this->product_id,
-        ];
-
-        if ($this->name !== null && $this->name !== '') {
-            $body['name'] = $this->name;
-        }
-
-        if ($this->date_created !== null && $this->date_created !== '') {
-            $body['date_created'] = $this->date_created;
-        }
-
-        if ($this->rating !== null) {
-            $body['rating'] = $this->rating;
-        }
-
-        if ($this->content !== null && $this->content !== '') {
-            $body['content'] = $this->content;
-        }
-
-        return $body;
+            'name' => $this->name,
+            'date_created' => $this->date_created,
+            'rating' => $this->rating,
+            'content' => $this->content,
+        ]);
     }
 }

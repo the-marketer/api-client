@@ -26,15 +26,18 @@ class UpdateTags extends AbstractPayload
 
     public function toApiPayload(): array
     {
-        $query = ['email' => $this->email];
+        $query = array_merge(
+            ['email' => $this->email],
+            static::filterNonEmpty([
+                'overwrite_existing' => $this->overwrite_existing,
+            ]),
+        );
+
         if ($this->add_tags !== null && $this->add_tags !== []) {
             $query['add_tags'] = $this->add_tags;
         }
         if ($this->remove_tags !== null && $this->remove_tags !== []) {
             $query['remove_tags'] = $this->remove_tags;
-        }
-        if ($this->overwrite_existing !== null) {
-            $query['overwrite_existing'] = $this->overwrite_existing;
         }
 
         return $query;

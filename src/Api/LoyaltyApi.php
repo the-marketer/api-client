@@ -6,8 +6,9 @@ namespace NotificationService\Sdk\Internal;
 
 use GuzzleHttp\Exception\GuzzleException;
 use JsonException;
+use TheMarketer\ApiClient\Common\AbstractApi;
 use TheMarketer\ApiClient\DTO\Loyalty\ManageLoyaltyPoints;
-use TheMarketer\ApiClient\DTO\Subscribers\SubscriberEmail;
+use TheMarketer\ApiClient\DTO\Subscribers\EmailValidator;
 use TheMarketer\ApiClient\Exception\ApiException;
 use TheMarketer\ApiClient\Exception\CustomerNotFoundException;
 use TheMarketer\ApiClient\Exception\MethodNotAllowedException;
@@ -15,16 +16,10 @@ use TheMarketer\ApiClient\Exception\UnauthorizedException;
 use TheMarketer\ApiClient\Exception\ValidationException;
 use TheMarketer\ApiClient\ApiGateway;
 
-class LoyaltyApi
+class LoyaltyApi extends AbstractApi
 {
-    public function __construct(
-        private readonly ApiGateway $api,
-    ) {
-    }
 
     /**
-     * GET `/loyalty_info` — query: `email` (validat).
-     *
      * @return array<string, mixed>
      *
      * @throws UnauthorizedException
@@ -37,12 +32,9 @@ class LoyaltyApi
      */
     public function getInfo(string $email): array
     {
-        $query = SubscriberEmail::validateAndCreate([
-            'email' => $email,
-        ])->toArray();
+        $dto = EmailValidator::validateAndCreate(['email' => $email]);
 
-        $request = $this->api->getRequest('/loyalty_info', $query);
-        return $this->api->decodeJson($this->api->sendJson($request));
+        return $this->context->http->get('/loyalty_info', $dto->toApiPayload());
     }
 
     /**
@@ -62,9 +54,8 @@ class LoyaltyApi
             'email' => $email,
             'action' => $action,
             'points' => $points,
-        ])->toArray();
+        ]);
 
-        $request = $this->api->postRequest('/manage_loyalty_points', $dto);
-        return $this->api->decodeJson($this->api->sendJson($request));
+        return $this->context->http->post('/manage_loyalty_points', $dto->toApiPayload());
     }
 }

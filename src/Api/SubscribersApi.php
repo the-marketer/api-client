@@ -12,8 +12,8 @@ use TheMarketer\ApiClient\DTO\Subscribers\AddSubscriberByPhone;
 use TheMarketer\ApiClient\DTO\Subscribers\DeleteSubscriber;
 use TheMarketer\ApiClient\DTO\Subscribers\ListSubscribersDateRange;
 use TheMarketer\ApiClient\DTO\Subscribers\RemoveSubscriber;
-use TheMarketer\ApiClient\DTO\Subscribers\SubscriberEmail;
-use TheMarketer\ApiClient\DTO\Subscribers\SubscriberRow;
+use TheMarketer\ApiClient\DTO\Subscribers\EmailValidator;
+use TheMarketer\ApiClient\DTO\Subscribers\SubscriberValidator;
 use TheMarketer\ApiClient\DTO\Subscribers\UnsubscribedEmails;
 use TheMarketer\ApiClient\DTO\Subscribers\UpdateTags;
 use TheMarketer\ApiClient\Exception\ApiException;
@@ -37,7 +37,7 @@ class SubscribersApi extends AbstractApi
      */
     public function statusSubscriber(string $email): array
     {
-        $dto = SubscriberEmail::validateAndCreate(['email' => $email]);
+        $dto = EmailValidator::validateAndCreate(['email' => $email]);
 
         return $this->context->http->get('/status_subscriber', $dto->toApiPayload());
     }
@@ -143,7 +143,7 @@ class SubscribersApi extends AbstractApi
      */
     public function addSubscriber(array $payload): array
     {
-        $dto = SubscriberRow::validateAndCreate($payload);
+        $dto = SubscriberValidator::validateAndCreate($payload);
 
         return $this->context->http->post('/add_subscriber', $dto->toApiPayload());
     }
@@ -157,11 +157,7 @@ class SubscribersApi extends AbstractApi
      * @throws GuzzleException
      * @throws JsonException
      */
-    public function addSubscriberByPhone(
-        string $phone,
-        ?string $firstname = null,
-        ?string $lastname = null,
-    ): array
+    public function addSubscriberByPhone(string $phone, ?string $firstname = null, ?string $lastname = null): array
     {
         $dto = AddSubscriberByPhone::validateAndCreate([
             'phone' => $phone,
@@ -169,10 +165,7 @@ class SubscribersApi extends AbstractApi
             'lastname' => $lastname,
         ]);
 
-        return $this->context->http->post(
-            '/add_subscriber_by_phone',
-            $dto->toApiPayload(),
-        );
+        return $this->context->http->post('/add_subscriber_by_phone', $dto->toApiPayload());
     }
 
     /**
@@ -210,7 +203,7 @@ class SubscribersApi extends AbstractApi
      */
     public function addSubscriberSync(array $payload): array
     {
-        $dto = SubscriberRow::validateAndCreate($payload);
+        $dto = SubscriberValidator::validateAndCreate($payload);
 
         return $this->context->http->post('/add_subscriber_sync', $dto->toApiPayload());
     }
@@ -262,7 +255,7 @@ class SubscribersApi extends AbstractApi
      */
     public function anonymizeEmail(string $email): array
     {
-        $dto = SubscriberEmail::validateAndCreate(['email' => $email]);
+        $dto = EmailValidator::validateAndCreate(['email' => $email]);
 
         return $this->context->http->post('/anonymize-email', $dto->toApiPayload());
     }

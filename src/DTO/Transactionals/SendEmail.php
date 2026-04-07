@@ -4,50 +4,67 @@ declare(strict_types=1);
 
 namespace TheMarketer\ApiClient\DTO\Transactionals;
 
-use Spatie\LaravelData\Attributes\Validation\Required;
-use Spatie\LaravelData\Attributes\Validation\Rule;
-use Spatie\LaravelData\Data;
+use Symfony\Component\Validator\Constraints as Assert;
 use TheMarketer\ApiClient\Common\AbstractPayload;
 
 class SendEmail extends AbstractPayload
 {
     public function __construct(
-        #[Required]
-        #[Rule('email:rfc')]
+        #[Assert\NotBlank]
+        #[Assert\Email]
         public string $to,
-        #[Required]
+        #[Assert\NotBlank]
         public string $subject,
-        #[Required]
+        #[Assert\NotBlank]
         public string $body,
-        #[Rule('nullable', 'string')]
+        #[Assert\Type('string')]
         public ?string $from = null,
-        #[Rule('nullable', 'email')]
+        #[Assert\Email]
         public ?string $reply_to = null,
-        #[Rule('sometimes', 'required', 'array')]
+        #[Assert\Type('array')]
         public ?array $attachments = null,
-    ) {
+    ) {}
+
+    public static function validateAndCreate(array $data): static
+    {
+        foreach (['to', 'from', 'reply_to'] as $key) {
+            if (!array_key_exists($key, $data) || !is_string($data[$key])) {
+                continue;
+            }
+            $trimmed = trim($data[$key]);
+            $data[$key] = $trimmed;
+            if ($key !== 'to' && $trimmed === '') {
+                $data[$key] = null;
+            }
+        }
+
+        $instance = new static(...$data);
+        $instance->validate();
+
+        return $instance;
     }
-    
+
+    /**
+     * @return array<string, mixed>
+     */
     public function toApiPayload(): array
     {
-        $body = [
-            'to' => trim($this->to),
-            'subject' => $this->subject,
-            'body' => $this->body,
-        ];
-
-        if ($this->from !== null && trim($this->from) !== '') {
-            $body['from'] = trim($this->from);
-        }
-
-        if ($this->reply_to !== null && trim($this->reply_to) !== '') {
-            $body['reply_to'] = trim($this->reply_to);
-        }
+        $optional = self::filterNonEmpty([
+            'from' => $this->from,
+            'reply_to' => $this->reply_to,
+        ]);
 
         if ($this->attachments !== null && $this->attachments !== []) {
-            $body['attachments'] = $this->attachments;
+            $optional['attachments'] = $this->attachments;
         }
 
-        return $body;
+        return array_merge(
+            [
+                'to' => $this->to,
+                'subject' => $this->subject,
+                'body' => $this->body,
+            ],
+            $optional,
+        );
     }
 }

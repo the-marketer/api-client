@@ -6,8 +6,9 @@ namespace NotificationService\Sdk\Internal;
 
 use GuzzleHttp\Exception\GuzzleException;
 use JsonException;
+use TheMarketer\ApiClient\Common\AbstractApi;
 use TheMarketer\ApiClient\DTO\Coupons\SaveCoupon;
-use TheMarketer\ApiClient\DTO\Subscribers\SubscriberEmail;
+use TheMarketer\ApiClient\DTO\Subscribers\EmailValidator;
 use TheMarketer\ApiClient\Exception\ApiException;
 use TheMarketer\ApiClient\Exception\CustomerNotFoundException;
 use TheMarketer\ApiClient\Exception\MethodNotAllowedException;
@@ -15,13 +16,8 @@ use TheMarketer\ApiClient\Exception\UnauthorizedException;
 use TheMarketer\ApiClient\Exception\ValidationException;
 use TheMarketer\ApiClient\ApiGateway;
 
-class CouponsApi
+class CouponsApi extends AbstractApi
 {
-    public function __construct(
-        private readonly ApiGateway $api,
-    ) {
-    }
-
     /**
      * @return array<string, mixed>
      *
@@ -35,12 +31,9 @@ class CouponsApi
      */
     public function getAvailableCoupons(string $email): array
     {
-        $query = SubscriberEmail::validateAndCreate([
-            'email' => $email,
-        ])->toArray();
+        $dto = EmailValidator::validateAndCreate(['email' => $email]);
 
-        $request = $this->api->getRequest('/get_available_coupons', $query);
-        return $this->api->decodeJson($this->api->sendJson($request));
+        return $this->context->http->get('/get_available_coupons', $dto->toApiPayload());
     }
 
     /**
@@ -56,9 +49,8 @@ class CouponsApi
      */
     public function save(array $payload): array
     {
-        $dto = SaveCoupon::validateAndCreate($payload)->toArray();
+        $dto = SaveCoupon::validateAndCreate($payload);
 
-        $request = $this->api->postRequest('/save_coupon', $dto);
-        return $this->api->decodeJson($this->api->sendJson($request));
+        return $this->context->http->post('/save_coupon', $dto->toApiPayload());
     }
 }

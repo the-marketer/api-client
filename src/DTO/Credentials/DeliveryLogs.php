@@ -4,32 +4,26 @@ declare(strict_types=1);
 
 namespace TheMarketer\ApiClient\DTO\Credentials;
 
-use Spatie\LaravelData\Attributes\Validation\Required;
-use Spatie\LaravelData\Attributes\Validation\Rule;
-use Spatie\LaravelData\Attributes\Validation\Sometimes;
-use Spatie\LaravelData\Data;
+use Symfony\Component\Validator\Constraints as Assert;
 use TheMarketer\ApiClient\Common\AbstractPayload;
 
-class GetDeliveryLogsQuery extends AbstractPayload
+class DeliveryLogs extends AbstractPayload
 {
     public function __construct(
-        #[Required]
-        #[Rule('email:rfc,dns')]
+        #[Assert\NotBlank]
+        #[Assert\Email]
         public string $email,
-        #[Sometimes]
-        #[Rule('nullable', 'integer', 'min:1', 'max:100')]
+        #[Assert\Type('integer')]
+        #[Assert\Range(min: 1, max: 100)]
         public ?int $per_page = null,
-        #[Sometimes]
-        #[Rule('nullable', 'integer', 'min:1')]
+        #[Assert\Type('integer')]
+        #[Assert\Positive]
         public ?int $page = null,
-        #[Sometimes]
-        #[Rule('nullable', 'string', 'date')]
+        #[Assert\Date]
         public ?string $start = null,
-        #[Sometimes]
-        #[Rule('nullable', 'string', 'date')]
+        #[Assert\Date]
         public ?string $end = null,
-    ) {
-    }
+    ) {}
     
     public function toApiPayload(): array
     {

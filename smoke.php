@@ -3,29 +3,18 @@
 declare(strict_types=1);
 
 require __DIR__ . '/vendor/autoload.php';
-require_once __DIR__ . '/src/Api/SubscribersApi.php';
 
-use GuzzleHttp\Exception\GuzzleException;
 use TheMarketer\ApiClient\Client;
-use TheMarketer\ApiClient\Exception\ApiException;
-use TheMarketer\ApiClient\Exception\CustomerNotFoundException;
-use TheMarketer\ApiClient\Exception\MethodNotAllowedException;
-use TheMarketer\ApiClient\Exception\UnauthorizedException;
-use TheMarketer\ApiClient\Exception\ValidationException;
 
-
-// REFEREE IQ
-$clientReferee = new Client(
-    '699c4b545a11c005db056fbe',
-    '9OQDWYSW'
+$clientTest = new Client(
+    '65eed706bb527bd25c09ea97',
+    'MGCAQVNY'
 );
 
 try {
-
-    $data = $clientReferee->campaigns()->getLatestCampaign();
-    var_dump($data);
-    exit();
-} catch (Exception|GuzzleException $e) {
-    var_dump($e);
+    $response = $clientTest->checkCredentials("PGBIQUKO");
+    var_dump($response);
+} catch (Throwable $e) {
+    fwrite(STDERR, get_class($e) . ': ' . $e->getMessage() . "\n");
+    throw $e;
 }
-

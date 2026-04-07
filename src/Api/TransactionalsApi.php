@@ -6,6 +6,7 @@ namespace NotificationService\Sdk\Internal;
 
 use GuzzleHttp\Exception\GuzzleException;
 use JsonException;
+use TheMarketer\ApiClient\Common\AbstractApi;
 use TheMarketer\ApiClient\DTO\Transactionals\SendEmail;
 use TheMarketer\ApiClient\DTO\Transactionals\SendSms;
 use TheMarketer\ApiClient\Exception\ApiException;
@@ -13,15 +14,9 @@ use TheMarketer\ApiClient\Exception\CustomerNotFoundException;
 use TheMarketer\ApiClient\Exception\MethodNotAllowedException;
 use TheMarketer\ApiClient\Exception\UnauthorizedException;
 use TheMarketer\ApiClient\Exception\ValidationException;
-use TheMarketer\ApiClient\ApiGateway;
 
-class TransactionalsApi
+class TransactionalsApi extends AbstractApi
 {
-    public function __construct(
-        private readonly ApiGateway $api,
-    ) {
-    }
-
     /**
      * @return array<string, mixed>
      *
@@ -33,11 +28,11 @@ class TransactionalsApi
      * @throws JsonException
      * @throws GuzzleException
      */
-    public function sendEmail(array $payload): array {
+    public function sendEmail(array $payload): array
+    {
         $dto = SendEmail::validateAndCreate($payload);
 
-        $request = $this->api->postRequest('/transactional/send-email', $dto->toApiPayload());
-        return $this->api->decodeJson($this->api->sendJson($request));
+        return $this->context->http->post('/transactional/send-email', $dto->toApiPayload());
     }
 
     /**
@@ -56,9 +51,8 @@ class TransactionalsApi
         $dto = SendSms::validateAndCreate([
             'to' => $to,
             'content' => $content,
-        ])->toArray();
+        ]);
 
-        $request = $this->api->postRequest('/transactional/send-sms', $dto);
-        return $this->api->decodeJson($this->api->sendJson($request));
+        return $this->context->http->post('/transactional/send-sms', $dto->toApiPayload());
     }
 }

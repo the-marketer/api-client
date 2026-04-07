@@ -18,7 +18,6 @@ class UpdateFeedUrl extends AbstractPayload
         public ?string $type = null,
     ) {}
 
-
     /**
      * @return array<string, string>
      */

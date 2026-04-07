@@ -6,10 +6,6 @@ namespace TheMarketer\ApiClient\DTO\Subscribers;
 
 use TheMarketer\ApiClient\Common\AbstractPayload;
 
-/**
- * Query opțional pentru {@see \NotificationService\Sdk\Internal\SubscribersApi::listUnsubscribed()}
- * și {@see \NotificationService\Sdk\Internal\SubscribersApi::listSubscribed()}.
- */
 class ListSubscribersDateRange extends AbstractPayload
 {
     public function __construct(
