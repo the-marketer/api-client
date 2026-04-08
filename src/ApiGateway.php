@@ -146,8 +146,7 @@ final class ApiGateway
             $options['json'] = $data;
         }
 
-//        $response = $this->client->request($method, $this->config->baseUrl() . $endpoint, $options);
-        $response = $this->client->request($method, $this->config->apiUrl() . $endpoint, $options);
+        $response = $this->client->request($method, $this->config->baseUrl() . $endpoint, $options);
 
         $this->throwForErrorResponse($response);
 
