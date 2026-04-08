@@ -14,7 +14,6 @@ use TheMarketer\ApiClient\Exception\CustomerNotFoundException;
 use TheMarketer\ApiClient\Exception\MethodNotAllowedException;
 use TheMarketer\ApiClient\Exception\UnauthorizedException;
 use TheMarketer\ApiClient\Exception\ValidationException;
-use TheMarketer\ApiClient\ApiGateway;
 
 class LoyaltyApi extends AbstractApi
 {
@@ -34,7 +33,7 @@ class LoyaltyApi extends AbstractApi
     {
         $dto = EmailValidator::validateAndCreate(['email' => $email]);
 
-        return $this->context->http->get('/loyalty_info', $dto->toApiPayload());
+        return $this->context->rest->get('/loyalty_info', $dto->toApiPayload());
     }
 
     /**
@@ -56,6 +55,6 @@ class LoyaltyApi extends AbstractApi
             'points' => $points,
         ]);
 
-        return $this->context->http->post('/manage_loyalty_points', $dto->toApiPayload());
+        return $this->context->rest->post('/manage_loyalty_points', $dto->toApiPayload());
     }
 }

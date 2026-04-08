@@ -6,20 +6,20 @@ require __DIR__ . '/vendor/autoload.php';
 
 use TheMarketer\ApiClient\Client;
 
-$clientTest = new Client(
-    '65eed706bb527bd25c09ea97',
-    'MGCAQVNY',
-);
+$clientTest = new Client([
+    'customerId' => '65eed706bb527bd25c09ea97',
+    'restKey' => 'MGCAQVNY',
+]);
 
-$clientReferee2 = new Client(
-    '69cd09e87e1f7708da06ba09',
-    'UIWVQYFX',
-);
+$clientReferee2 = new Client([
+    'customerId' => '69cd09e87e1f7708da06ba09',
+    'restKey' => 'UIWVQYFX',
+]);
 
-$clientNamos = new Client(
-    '62b969c6d0385a1b694ecfb9',
-    '8784T542',
-);
+$clientNamos = new Client([
+    'customerId' => '62b969c6d0385a1b694ecfb9',
+    'restKey' => '8784T542',
+]);
 
 try {
     $response = $clientNamos->events()->search(

@@ -39,7 +39,7 @@ class SubscribersApi extends AbstractApi
     {
         $dto = EmailValidator::validateAndCreate(['email' => $email]);
 
-        return $this->context->http->get('/status_subscriber', $dto->toApiPayload());
+        return $this->context->rest->get('/status_subscriber', $dto->toApiPayload());
     }
 
     /**
@@ -58,7 +58,7 @@ class SubscribersApi extends AbstractApi
             'date_to' => $dateTo,
         ]);
 
-        return $this->context->http->get('/unsubscribed_emails', $dto->toApiPayload());
+        return $this->context->rest->get('/unsubscribed_emails', $dto->toApiPayload());
     }
 
     /**
@@ -79,7 +79,7 @@ class SubscribersApi extends AbstractApi
             'date_to' => $dateTo,
         ]);
 
-        return $this->context->http->get('/unsubscribed_emails', $dto->toApiPayload());
+        return $this->context->rest->get('/unsubscribed_emails', $dto->toApiPayload());
     }
 
     /**
@@ -100,7 +100,7 @@ class SubscribersApi extends AbstractApi
             'date_to' => $dateTo,
         ]);
 
-        return $this->context->http->get('/subscribed_emails', $dto->toApiPayload());
+        return $this->context->rest->get('/subscribed_emails', $dto->toApiPayload());
     }
 
     /**
@@ -116,7 +116,7 @@ class SubscribersApi extends AbstractApi
      */
     public function subscribersEvolution(): array
     {
-        return $this->context->http->get('/subscribers-evolution');
+        return $this->context->rest->get('/subscribers-evolution');
     }
 
     /**
@@ -132,7 +132,7 @@ class SubscribersApi extends AbstractApi
     {
         $dto = SubscriberValidator::validateAndCreate($payload);
 
-        return $this->context->http->post('/add_subscriber', $dto->toApiPayload());
+        return $this->context->rest->post('/add_subscriber', $dto->toApiPayload());
     }
 
     /**
@@ -152,7 +152,7 @@ class SubscribersApi extends AbstractApi
             'lastname' => $lastname,
         ]);
 
-        return $this->context->http->post('/add_subscriber_by_phone', $dto->toApiPayload());
+        return $this->context->rest->post('/add_subscriber_by_phone', $dto->toApiPayload());
     }
 
     /**
@@ -172,7 +172,7 @@ class SubscribersApi extends AbstractApi
     {
         $dto = AddSubscriberBulk::validateAndCreate(['subscribers' => $subscribers]);
 
-        return $this->context->http->post('/add_subscriber_bulk', $dto->toApiPayload());
+        return $this->context->rest->post('/add_subscriber_bulk', $dto->toApiPayload());
     }
 
     /**
@@ -192,7 +192,7 @@ class SubscribersApi extends AbstractApi
     {
         $dto = SubscriberValidator::validateAndCreate($payload);
 
-        return $this->context->http->post('/add_subscriber_sync', $dto->toApiPayload());
+        return $this->context->rest->post('/add_subscriber_sync', $dto->toApiPayload());
     }
 
     /**
@@ -212,7 +212,7 @@ class SubscribersApi extends AbstractApi
     {
         $dto = DeleteSubscriber::validateAndCreate($payload);
 
-        return $this->context->http->post('/delete_subscriber', $dto->toApiPayload());
+        return $this->context->rest->post('/delete_subscriber', $dto->toApiPayload());
     }
 
     /**
@@ -233,7 +233,7 @@ class SubscribersApi extends AbstractApi
             'channels' => $channels,
         ]);
 
-        return $this->context->http->post('/remove_subscriber', $dto->toApiPayload());
+        return $this->context->rest->post('/remove_subscriber', $dto->toApiPayload());
     }
 
     /**
@@ -244,7 +244,7 @@ class SubscribersApi extends AbstractApi
     {
         $dto = EmailValidator::validateAndCreate(['email' => $email]);
 
-        return $this->context->http->post('/anonymize-email', $dto->toApiPayload());
+        return $this->context->rest->post('/anonymize-email', $dto->toApiPayload());
     }
 
     /**
@@ -275,6 +275,6 @@ class SubscribersApi extends AbstractApi
             'overwrite_existing' => $overwriteExisting,
         ]);
 
-        return $this->context->http->post('/update-tags', $dto->toApiPayload());
+        return $this->context->rest->post('/update-tags', $dto->toApiPayload());
     }
 }

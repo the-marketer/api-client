@@ -6,12 +6,12 @@ namespace TheMarketer\ApiClient;
 
 use GuzzleHttp\Exception\GuzzleException;
 use JsonException;
-use NotificationService\Sdk\Internal\MobilePushApi;
 use NotificationService\Sdk\Internal\CampaignsApi;
 use NotificationService\Sdk\Internal\CouponsApi;
 use NotificationService\Sdk\Internal\CredentialsClient;
 use NotificationService\Sdk\Internal\EventsApi;
 use NotificationService\Sdk\Internal\LoyaltyApi;
+use NotificationService\Sdk\Internal\MobilePushApi;
 use NotificationService\Sdk\Internal\OrdersApi;
 use NotificationService\Sdk\Internal\ProductsApi;
 use NotificationService\Sdk\Internal\ReportsApi;
@@ -51,18 +51,28 @@ class Client
     private readonly ApiContext $context;
 
     /**
-     * @param string $customerId
-     * @param string $restKey
-     * @param int $maxRetryAttempts Extra HTTP attempts after the first try for transient errors (connection, timeout, 502/503/504, etc.). 0 disables retries.
+     * @param array{customerId: string, restKey: string, trackingKey?: string, restUrl?: string, trackingUrl?: string, maxRetryAttempts?: int} $config
      */
-    public function __construct(
-        string $customerId,
-        string $restKey,
-        int $maxRetryAttempts = 1,
-    )
+    public function __construct(array $config)
     {
-        $config = new Config($customerId, $restKey);
-        $this->context = new ApiContext(new ApiGateway($config, $maxRetryAttempts), $config);
+        $config = array_merge([
+            'customerId' => '',
+            'restKey' => '',
+            'trackingKey' => '',
+            'restUrl' => 'https://t.themarketer.com',
+            'trackingUrl' => 'https://t.themarketer.com',
+            'maxRetryAttempts' => 1,
+        ], $config);
+
+        $configObj = new Config(
+            $config['customerId'],
+            $config['restKey'],
+            $config['restUrl'],
+            $config['trackingUrl'],
+            $config['trackingKey'],
+        );
+
+        $this->context = new ApiContext($configObj, $config['maxRetryAttempts']);
 
         $this->subscribers = new SubscribersApi($this->context);
 

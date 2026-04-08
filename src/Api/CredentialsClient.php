@@ -31,11 +31,11 @@ final class CredentialsClient extends AbstractApi
     {
         $dto = CheckCredentials::validateAndCreate([
             'k' => $trackingKey,
-            'r' => $this->context->http->config()->restKey(),
-            'u' => $this->context->http->config()->customerId(),
+            'r' => $this->context->config->restKey(),
+            'u' => $this->context->config->customerId(),
         ]);
 
-        return $this->context->http->post('/check-credentials', $dto->toApiPayload());
+        return $this->context->rest->post('/check-credentials', $dto->toApiPayload());
     }
 
     /**
@@ -49,7 +49,7 @@ final class CredentialsClient extends AbstractApi
      */
     public function checkApiCredentials(): array
     {
-        return $this->context->http->post('/check-api-credentials');
+        return $this->context->rest->post('/check-api-credentials');
     }
 
     /**
@@ -58,7 +58,7 @@ final class CredentialsClient extends AbstractApi
      */
     public function getCosts(): array
     {
-        return $this->context->http->get('/get_costs');
+        return $this->context->rest->get('/get_costs');
     }
 
     /**
@@ -67,7 +67,7 @@ final class CredentialsClient extends AbstractApi
      */
     public function getRealtimeVisitors(): array
     {
-        return $this->context->http->get('/realtime_visitors');
+        return $this->context->rest->get('/realtime_visitors');
     }
 
     /**
@@ -76,7 +76,7 @@ final class CredentialsClient extends AbstractApi
      */
     public function getSmsCredit(): array
     {
-        return $this->context->http->get('/check-sms-credit');
+        return $this->context->rest->get('/check-sms-credit');
     }
 
     /**
@@ -88,7 +88,7 @@ final class CredentialsClient extends AbstractApi
     {
         $dto = ReferralLink::validateAndCreate(['email' => $email]);
 
-        $response = $this->context->http->get('/get-referral-link', $dto->toApiPayload(), json: false);
+        $response = $this->context->rest->get('/get-referral-link', $dto->toApiPayload(), json: false);
         return $response->getBody()->getContents();
     }
 
@@ -101,7 +101,7 @@ final class CredentialsClient extends AbstractApi
     {
         $dto = DeliveryLogs::validateAndCreate($payload);
 
-        return $this->context->http->get('/delivery-logs', $dto->toApiPayload());
+        return $this->context->rest->get('/delivery-logs', $dto->toApiPayload());
     }
 
     /**
@@ -113,6 +113,6 @@ final class CredentialsClient extends AbstractApi
     {
         $dto = EnteredAutomation::validateAndCreate($payload);
 
-        return $this->context->http->get('/entered-automation', $dto->toApiPayload());
+        return $this->context->rest->get('/entered-automation', $dto->toApiPayload());
     }
 }

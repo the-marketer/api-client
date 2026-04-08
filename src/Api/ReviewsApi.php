@@ -35,7 +35,7 @@ class ReviewsApi extends AbstractApi
     {
         $dto = ProductReviews::validateAndCreate($query);
 
-        $response = $this->context->http->get('/product_reviews', $dto->toApiPayload(), json: false);
+        $response = $this->context->rest->get('/product_reviews', $dto->toApiPayload(), json: false);
         return $response->getBody()->getContents();
     }
 
@@ -55,7 +55,7 @@ class ReviewsApi extends AbstractApi
     {
         $dto = AddReview::validateAndCreate($payload);
 
-        return $this->context->http->post('/add_review', $dto->toApiPayload());
+        return $this->context->rest->post('/add_review', $dto->toApiPayload());
     }
 
     /**
@@ -74,7 +74,7 @@ class ReviewsApi extends AbstractApi
     {
         $dto = MerchantAddReview::validateAndCreate($payload);
 
-        return $this->context->http->post('/merchant_add_review', $dto->toApiPayload());
+        return $this->context->rest->post('/merchant_add_review', $dto->toApiPayload());
     }
 
     /**
@@ -93,6 +93,6 @@ class ReviewsApi extends AbstractApi
     {
         $dto = MerchantProSettings::validateAndCreate($payload);
 
-        return $this->context->http->post('/merchantpro_settings', $dto->toApiPayload());
+        return $this->context->rest->post('/merchantpro_settings', $dto->toApiPayload());
     }
 }

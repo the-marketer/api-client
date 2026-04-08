@@ -9,9 +9,9 @@ use GuzzleHttp\Handler\MockHandler;
 use GuzzleHttp\Psr7\Response;
 use Orchestra\Testbench\TestCase as OrchestraTestCase;
 use Psr\Http\Message\RequestInterface;
-use TheMarketer\ApiClient\ApiGateway;
 use TheMarketer\ApiClient\Common\ApiContext;
 use TheMarketer\ApiClient\Common\Config;
+use TheMarketer\ApiClient\Gateways\ApiGateway;
 
 abstract class TestCase extends OrchestraTestCase
 {

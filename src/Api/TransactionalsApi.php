@@ -34,7 +34,7 @@ class TransactionalsApi extends AbstractApi
     {
         $dto = SendEmail::validateAndCreate($payload);
 
-        return $this->context->http->post(self::TRANSACTIONAL_ENDPOINT . '/send-email', $dto->toApiPayload());
+        return $this->context->rest->post(self::TRANSACTIONAL_ENDPOINT . '/send-email', $dto->toApiPayload());
     }
 
     /**
@@ -55,7 +55,7 @@ class TransactionalsApi extends AbstractApi
             'content' => $content,
         ]);
 
-        return $this->context->http->post(self::TRANSACTIONAL_ENDPOINT . '/send-sms', $dto->toApiPayload());
+        return $this->context->rest->post(self::TRANSACTIONAL_ENDPOINT . '/send-sms', $dto->toApiPayload());
     }
 
     /**
@@ -66,7 +66,7 @@ class TransactionalsApi extends AbstractApi
     {
         $dto = SendEmail::validateAndCreate($payload);
 
-        return $this->context->http->post(self::TRANSACTIONAL_ENDPOINT . '/queue-send-email', $dto->toApiPayload());
+        return $this->context->rest->post(self::TRANSACTIONAL_ENDPOINT . '/queue-send-email', $dto->toApiPayload());
     }
 
     /**
@@ -86,6 +86,6 @@ class TransactionalsApi extends AbstractApi
     {
         $dto = SendEmailsBulk::validateAndCreate($payload);
 
-        return $this->context->http->post(self::TRANSACTIONAL_ENDPOINT . '/batch-send-email', $dto->toApiPayload());
+        return $this->context->rest->post(self::TRANSACTIONAL_ENDPOINT . '/batch-send-email', $dto->toApiPayload());
     }
 }

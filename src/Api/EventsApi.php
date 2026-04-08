@@ -8,11 +8,11 @@ use GuzzleHttp\Exception\GuzzleException;
 use JsonException;
 use TheMarketer\ApiClient\Common\AbstractApi;
 use TheMarketer\ApiClient\DTO\Events\CustomEvent;
+use TheMarketer\ApiClient\DTO\Events\InitiateCheckoutEvent;
 use TheMarketer\ApiClient\DTO\Events\ProductLineEvent;
 use TheMarketer\ApiClient\DTO\Events\SearchEvent;
 use TheMarketer\ApiClient\DTO\Events\ServeJavascriptEvent;
 use TheMarketer\ApiClient\DTO\Events\SetEmailEvent;
-use TheMarketer\ApiClient\DTO\Events\InitiateCheckoutEvent;
 use TheMarketer\ApiClient\DTO\Events\ViewHomepageEvent;
 use TheMarketer\ApiClient\DTO\Events\ViewProductEvent;
 use TheMarketer\ApiClient\Exception\ApiException;
@@ -24,7 +24,7 @@ use TheMarketer\ApiClient\Exception\ValidationException;
 class EventsApi extends AbstractApi
 {
     /**
-     * @param  array<string, mixed>  $payload
+     * @param array<string, mixed> $payload
      * @return array<string, mixed>
      *
      * @throws UnauthorizedException
@@ -46,7 +46,7 @@ class EventsApi extends AbstractApi
     {
         $dto = CustomEvent::validateAndCreate($payload);
 
-        return $this->context->http->post('/t/r', $dto->toApiPayload());
+        return $this->context->tracking->post('/t/r', $dto->toApiPayload());
     }
 
     /**
@@ -57,7 +57,7 @@ class EventsApi extends AbstractApi
     {
         $dto = ViewHomepageEvent::validateAndCreate($payload);
 
-        return $this->context->http->post('/t/r', $dto->toApiPayload());
+        return $this->context->tracking->post('/t/r', $dto->toApiPayload());
     }
 
     /**
@@ -68,7 +68,7 @@ class EventsApi extends AbstractApi
     {
         $dto = SetEmailEvent::validateAndCreate($payload);
 
-        return $this->context->http->post('/t/r', $dto->toApiPayload());
+        return $this->context->tracking->post('/t/r', $dto->toApiPayload());
     }
 
     /**
@@ -79,7 +79,7 @@ class EventsApi extends AbstractApi
     {
         $dto = ViewProductEvent::validateAndCreate($payload);
 
-        return $this->context->http->post('/t/r', $dto->toApiPayload());
+        return $this->context->tracking->post('/t/r', $dto->toApiPayload());
     }
 
     /**
@@ -90,7 +90,7 @@ class EventsApi extends AbstractApi
     {
         $dto = ProductLineEvent::validateAndCreate($payload);
 
-        return $this->context->http->post('/t/r', $dto->toApiPayload());
+        return $this->context->tracking->post('/t/r', $dto->toApiPayload());
     }
 
     /**
@@ -101,7 +101,7 @@ class EventsApi extends AbstractApi
     {
         $dto = ProductLineEvent::validateAndCreate($payload);
 
-        return $this->context->http->post('/t/r', $dto->toApiPayload());
+        return $this->context->tracking->post('/t/r', $dto->toApiPayload());
     }
 
     /**
@@ -112,7 +112,7 @@ class EventsApi extends AbstractApi
     {
         $dto = ProductLineEvent::validateAndCreate($payload);
 
-        return $this->context->http->post('/t/r', $dto->toApiPayload());
+        return $this->context->tracking->post('/t/r', $dto->toApiPayload());
     }
 
     /**
@@ -123,7 +123,7 @@ class EventsApi extends AbstractApi
     {
         $dto = ProductLineEvent::validateAndCreate($payload);
 
-        return $this->context->http->post('/t/r', $dto->toApiPayload());
+        return $this->context->tracking->post('/t/r', $dto->toApiPayload());
     }
 
     /**
@@ -134,7 +134,7 @@ class EventsApi extends AbstractApi
     {
         $dto = InitiateCheckoutEvent::validateAndCreate($payload);
 
-        return $this->context->http->post('/t/r', $dto->toApiPayload());
+        return $this->context->tracking->post('/t/r', $dto->toApiPayload());
     }
 
     /**
@@ -143,13 +143,13 @@ class EventsApi extends AbstractApi
      */
     public function search(array $payload): array
     {
-        $payload = [...$payload, 'api_key' => $this->context->http->config()->restKey()];
         $dto = SearchEvent::validateAndCreate($payload);
-        return $this->context->http->post('/t/r', $dto->toApiPayload());
+
+        return $this->context->tracking->post('/t/r', $dto->toApiPayload());
     }
 
     /**
-     * @param  string  $trackingKey  maps to validated `k` (6–20 chars), same as backend `ServeJavascriptFile`
+     * @param string $trackingKey maps to validated `k` (6–20 chars), same as backend `ServeJavascriptFile`
      *
      * @throws GuzzleException
      * @throws JsonException
@@ -158,6 +158,6 @@ class EventsApi extends AbstractApi
     {
         $dto = ServeJavascriptEvent::validateAndCreate(['k' => $trackingKey]);
 
-        return $this->context->http->get('/t/j/' . $trackingKey, $dto->toApiPayload());
+        return $this->context->tracking->get('/t/j/' . $trackingKey, $dto->toApiPayload());
     }
 }

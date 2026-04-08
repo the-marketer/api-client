@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace TheMarketer\ApiClient;
+namespace TheMarketer\ApiClient\Gateways;
 
 use GuzzleHttp\Client as GuzzleClient;
 use GuzzleHttp\Exception\GuzzleException;
@@ -14,8 +14,9 @@ use TheMarketer\ApiClient\Exception\CustomerNotFoundException;
 use TheMarketer\ApiClient\Exception\MethodNotAllowedException;
 use TheMarketer\ApiClient\Exception\UnauthorizedException;
 use TheMarketer\ApiClient\Exception\ValidationException;
+use TheMarketer\ApiClient\GuzzleRetryHandlerStackFactory;
 
-final class ApiGateway
+abstract class AbstractGateway
 {
     private const USER_AGENT = 'TheMarketer API Client';
 
@@ -25,13 +26,19 @@ final class ApiGateway
      * @param GuzzleClient|null $client Opțional: client Guzzle (ex. mock în teste). Dacă e null, se creează client cu retry.
      */
     public function __construct(
-        private readonly Config $config,
+        protected readonly Config $config,
         int $maxRetryAttempts = 1,
         ?GuzzleClient $client = null,
     )
     {
         $this->client = $client ?? $this->createClient($maxRetryAttempts);
     }
+
+    abstract protected function assertAuthPresent(): void;
+
+    abstract protected function authQuery(): array;
+
+    abstract protected function baseUrl(): string;
 
     /**
      * @throws GuzzleException
@@ -139,41 +146,20 @@ final class ApiGateway
      */
     private function request(string $method, string $endpoint, array $data, array $query, bool $json): ResponseInterface|array
     {
-        $this->assertDomainAuthPresent();
+        $this->assertAuthPresent();
 
-        $options = ['query' => array_merge($this->authQuery(), $query)];
+        $mergedQuery = array_merge($this->authQuery(), $query);
+        $options = $mergedQuery !== [] ? ['query' => $mergedQuery] : [];
         if ($data !== []) {
             $options['json'] = $data;
         }
 
-//        $response = $this->client->request($method, $this->config->baseUrl() . $endpoint, $options);
-        $response = $this->client->request($method, $this->config->apiUrl() . $endpoint, $options);
+        $url = str_starts_with($endpoint, 'http') ? $endpoint : $this->baseUrl() . ltrim($endpoint, '/');
+        $response = $this->client->request($method, $url, $options);
 
         $this->throwForErrorResponse($response);
 
         return $json ? $this->decodeJson($response) : $response;
-    }
-
-    private function authQuery(): array
-    {
-        return [
-            'k' => $this->config->restKey(),
-            'u' => $this->config->customerId(),
-        ];
-    }
-
-    /**
-     * @throws ValidationException
-     */
-    private function assertDomainAuthPresent(): void
-    {
-        if ($this->config->customerId() === '') {
-            throw new ValidationException('Customer ID not provided.');
-        }
-
-        if ($this->config->restKey() === '') {
-            throw new ValidationException('Rest key not provided.');
-        }
     }
 
     /**

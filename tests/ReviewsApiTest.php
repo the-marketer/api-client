@@ -10,10 +10,10 @@ use GuzzleHttp\Handler\MockHandler;
 use GuzzleHttp\HandlerStack;
 use GuzzleHttp\Psr7\Response;
 use NotificationService\Sdk\Internal\ReviewsApi;
-use TheMarketer\ApiClient\ApiGateway;
 use TheMarketer\ApiClient\Common\ApiContext;
 use TheMarketer\ApiClient\Common\Config;
 use TheMarketer\ApiClient\Exception\ValidationException;
+use TheMarketer\ApiClient\Gateways\ApiGateway;
 
 final class ReviewsApiTest extends TestCase
 {

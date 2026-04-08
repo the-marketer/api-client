@@ -26,7 +26,7 @@ class OrdersApi extends AbstractApi
             'order_status' => $order_status,
         ]);
 
-        return $this->context->http->get('/update_order_status', $dto->toApiPayload());
+        return $this->context->rest->get('/update_order_status', $dto->toApiPayload());
     }
 
     /**
@@ -42,7 +42,7 @@ class OrdersApi extends AbstractApi
     {
         $dto = SaveOrder::validateAndCreate($payload);
 
-        return $this->context->http->post('/save_order', $dto->toApiPayload());
+        return $this->context->rest->post('/save_order', $dto->toApiPayload());
     }
 
     /**
@@ -53,7 +53,7 @@ class OrdersApi extends AbstractApi
     {
         $dto = SaveOrderRetail::validateAndCreate($payload);
 
-        return $this->context->http->post('/save_order_retail', $dto->toApiPayload());
+        return $this->context->rest->post('/save_order_retail', $dto->toApiPayload());
     }
 
     /**
@@ -69,7 +69,7 @@ class OrdersApi extends AbstractApi
             'type' => $type
         ]);
 
-        return $this->context->http->post('/update_feed_url', $dto->toApiPayload());
+        return $this->context->rest->post('/update_feed_url', $dto->toApiPayload());
     }
 
     /**
@@ -85,7 +85,7 @@ class OrdersApi extends AbstractApi
             'type' => $type
         ]);
 
-        return $this->context->http->post('/update_order_feed_url', $dto->toApiPayload());
+        return $this->context->rest->post('/update_order_feed_url', $dto->toApiPayload());
     }
 
     /**
@@ -96,6 +96,6 @@ class OrdersApi extends AbstractApi
      */
     public function getEcommerceStats(): array
     {
-        return $this->context->http->get('/get-ecommerce-stats');
+        return $this->context->rest->get('/get-ecommerce-stats');
     }
 }

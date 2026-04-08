@@ -34,7 +34,7 @@ class ProductsApi extends AbstractApi
     {
         $dto = CreateProduct::validateAndCreate($payload);
 
-        return $this->context->http->post('/product/create', $dto->toApiPayload());
+        return $this->context->rest->post('/product/create', $dto->toApiPayload());
     }
 
     /**
@@ -54,7 +54,7 @@ class ProductsApi extends AbstractApi
     {
         $dto = UpdateProduct::validateAndCreate($payload);
 
-        return $this->context->http->post('/product/update', $dto->toApiPayload());
+        return $this->context->rest->post('/product/update', $dto->toApiPayload());
     }
 
 
@@ -75,7 +75,7 @@ class ProductsApi extends AbstractApi
     {
         $dto = SyncCategory::validateAndCreate($payload);
 
-        return $this->context->http->post('/category/upsert', $dto->toApiPayload());
+        return $this->context->rest->post('/category/upsert', $dto->toApiPayload());
     }
 
     /**
@@ -95,6 +95,6 @@ class ProductsApi extends AbstractApi
     {
         $dto = SyncBrand::validateAndCreate($payload);
 
-        return $this->context->http->post('/brand/upsert', $dto->toApiPayload());
+        return $this->context->rest->post('/brand/upsert', $dto->toApiPayload());
     }
 }

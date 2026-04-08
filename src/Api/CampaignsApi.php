@@ -36,7 +36,7 @@ class CampaignsApi extends AbstractApi
     {
         $dto = ListCampaign::validateAndCreate($payload ?? []);
 
-        return $this->context->http->post(self::CAMPAIGNS_ENDPOINT . '/list', $dto->toApiPayload());
+        return $this->context->rest->post(self::CAMPAIGNS_ENDPOINT . '/list', $dto->toApiPayload());
     }
 
     /**
@@ -54,7 +54,7 @@ class CampaignsApi extends AbstractApi
     {
         $dto = CreateCampaign::validateAndCreate($payload);
 
-        return $this->context->http->post(self::CAMPAIGNS_ENDPOINT . '/create', $dto->toApiPayload());
+        return $this->context->rest->post(self::CAMPAIGNS_ENDPOINT . '/create', $dto->toApiPayload());
     }
 
     /**
@@ -72,7 +72,7 @@ class CampaignsApi extends AbstractApi
     {
         $dto = CampaignId::validateAndCreate(['id' => $id]);
 
-        return $this->context->http->get(self::CAMPAIGNS_ENDPOINT . '/' . $dto->id . '/email/get-report');
+        return $this->context->rest->get(self::CAMPAIGNS_ENDPOINT . '/' . $dto->id . '/email/get-report');
     }
 
     /**
@@ -90,6 +90,6 @@ class CampaignsApi extends AbstractApi
     {
         $dto = LatestCampaign::validateAndCreate(['limit' => $limit]);
 
-        return $this->context->http->get('/get-latest-campaign', $dto->toApiPayload());
+        return $this->context->rest->get('/get-latest-campaign', $dto->toApiPayload());
     }
 }

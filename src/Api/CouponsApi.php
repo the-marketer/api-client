@@ -14,7 +14,6 @@ use TheMarketer\ApiClient\Exception\CustomerNotFoundException;
 use TheMarketer\ApiClient\Exception\MethodNotAllowedException;
 use TheMarketer\ApiClient\Exception\UnauthorizedException;
 use TheMarketer\ApiClient\Exception\ValidationException;
-use TheMarketer\ApiClient\ApiGateway;
 
 class CouponsApi extends AbstractApi
 {
@@ -33,7 +32,7 @@ class CouponsApi extends AbstractApi
     {
         $dto = EmailValidator::validateAndCreate(['email' => $email]);
 
-        return $this->context->http->get('/get_available_coupons', $dto->toApiPayload());
+        return $this->context->rest->get('/get_available_coupons', $dto->toApiPayload());
     }
 
     /**
@@ -51,6 +50,6 @@ class CouponsApi extends AbstractApi
     {
         $dto = SaveCoupon::validateAndCreate($payload);
 
-        return $this->context->http->post('/save_coupon', $dto->toApiPayload());
+        return $this->context->rest->post('/save_coupon', $dto->toApiPayload());
     }
 }

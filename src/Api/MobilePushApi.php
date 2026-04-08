@@ -38,7 +38,7 @@ class MobilePushApi extends AbstractApi
             'type' => $type,
         ]);
 
-        return $this->context->http->post(self::MOBILE_PUSH_URL . '/set', $dto->toApiPayload());
+        return $this->context->rest->post(self::MOBILE_PUSH_URL . '/set', $dto->toApiPayload());
     }
 
     /**
@@ -59,6 +59,6 @@ class MobilePushApi extends AbstractApi
             'type' => $type,
         ]);
 
-        return $this->context->http->post(self::MOBILE_PUSH_URL . '/remove', $dto->toApiPayload());
+        return $this->context->rest->post(self::MOBILE_PUSH_URL . '/remove', $dto->toApiPayload());
     }
 }

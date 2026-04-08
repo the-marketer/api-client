@@ -8,34 +8,26 @@ class Config
 {
     private string $customerId;
     private string $restKey;
-    private string $apiUrl;
+    private string $restUrl;
+    private string $trackingKey;
+    private string $trackingUrl;
     private string $apiVersion;
 
     public function __construct(
         string $customerId,
         string $restKey,
-        // string $apiUrl = 'https://t.themarketer.com',
-        string $apiUrl = 'http://localhost:8080',
+        string $restUrl = 'https://t.themarketer.com',
+        string $trackingUrl = 'https://t.themarketer.com',
+        string $trackingKey = '',
         string $apiVersion = 'v1',
     )
     {
         $this->customerId = $customerId;
         $this->restKey = $restKey;
-        $this->apiUrl = $apiUrl;
+        $this->restUrl = $restUrl;
+        $this->trackingUrl = $trackingUrl;
+        $this->trackingKey = $trackingKey;
         $this->apiVersion = $apiVersion;
-    }
-
-    public function apiUrl(): string
-    {
-        return $this->apiUrl;
-    }
-
-    /**
-     * Base URL for API requests (host + `/api/{version}`), e.g. `https://t.themarketer.com/api/v1`.
-     */
-    public function baseUrl(): string
-    {
-        return rtrim($this->apiUrl, '/') . '/api/' . $this->apiVersion;
     }
 
     public function apiVersion(): string
@@ -53,8 +45,23 @@ class Config
         return $this->restKey;
     }
 
-    public function eventsBaseUrl(): string
+    public function restUrl(): string
     {
-        return rtrim($this->apiUrl, '/') . '/t';
+        return $this->restUrl;
+    }
+
+    public function baseRestUrl(): string
+    {
+        return rtrim($this->restUrl, '/') . '/api/' . $this->apiVersion . '/';
+    }
+
+    public function trackingKey(): string
+    {
+        return $this->trackingKey;
+    }
+
+    public function trackingUrl(): string
+    {
+        return $this->trackingUrl;
     }
 }
