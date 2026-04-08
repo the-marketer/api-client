@@ -11,44 +11,55 @@ Ghid rapid pentru cele mai comune erori.
 | `405` | `MethodNotAllowedException` |
 | Other API errors | `ApiException` |
 
-Erorile de validare locala (DTO/config) apar ca `ValidationException`.
+Erorile de validare locală (DTO/config) apar ca `TheMarketer\ApiClient\Exception\ValidationException`.
+
+Înainte de request, gateway-urile verifică și configurația:
+
+- **REST** (`ApiGateway`): `customerId` și `restKey` ne-goale.
+- **Tracking** (`TrackingGateway`): `trackingKey` ne-gol pentru fluxuri pe host-ul de tracking.
 
 ## Common scenarios
 
 ### 401 Unauthorized
 
-**Cauza:** `customerId` sau `restKey` invalid.
+**Cauză:** `customerId` sau `restKey` invalid.
 
 **Fix:**
-- verifica credentialele active;
-- ruleaza `checkApiCredentials()` la bootstrap.
+- verifică credențialele active;
+- rulează `checkApiCredentials()` la bootstrap (returnează `bool` pe `Client`).
 
 ### 404 Customer not found
 
-**Cauza:** customer ID inexistent sau endpoint gresit.
+**Cauză:** customer ID inexistent sau endpoint greșit.
 
 **Fix:**
-- verifica `customerId`;
-- confirma mediul/host-ul configurat.
+- verifică `customerId`;
+- confirmă mediul/host-ul configurat.
 
 ### 405 Method not allowed
 
-**Cauza:** endpoint corect, metoda HTTP incorecta.
+**Cauză:** endpoint corect, metodă HTTP incorectă.
 
 **Fix:**
-- verifica metoda API folosita de clientul curent.
+- verifică metoda API folosită de clientul curent.
+
+### ValidationException (config)
+
+**Cauză:** lipsă `trackingKey` la apeluri care folosesc gateway-ul de tracking.
+
+**Fix:** adaugă `trackingKey` în array-ul pasat la `new Client([...])`.
 
 ### JsonException
 
-**Cauza:** raspuns invalid JSON la endpoint-ul apelat.
+**Cauză:** răspuns invalid JSON la endpoint-ul apelat.
 
 **Fix:**
-- logheaza raspunsul brut;
-- verifica eventuale probleme temporare pe API upstream.
+- loghează răspunsul brut;
+- verifică eventuale probleme temporare pe API upstream.
 
 ## Troubleshooting checklist
 
-- Ruleaza `checkApiCredentials()` inainte de apeluri business.
-- Activeaza logging pentru request/response metadata.
-- Valideaza payload-ul inainte de trimitere.
-- Izoleaza problema cu un payload minim.
+- Rulează `checkApiCredentials()` înainte de apeluri business.
+- Activează logging pentru request/response metadata.
+- Validează payload-ul înainte de trimitere.
+- Izolează problema cu un payload minim.

@@ -10,10 +10,8 @@ use GuzzleHttp\Handler\MockHandler;
 use GuzzleHttp\HandlerStack;
 use GuzzleHttp\Psr7\Response;
 use NotificationService\Sdk\Internal\EventsApi;
-use TheMarketer\ApiClient\Common\ApiContext;
 use TheMarketer\ApiClient\Common\Config;
 use TheMarketer\ApiClient\Exception\ValidationException;
-use TheMarketer\ApiClient\Gateways\ApiGateway;
 
 final class EventsApiTest extends TestCase
 {
@@ -57,11 +55,11 @@ final class EventsApiTest extends TestCase
 
         $request = $this->lastRequest($container);
         $this->assertSame('POST', $request->getMethod());
-        $this->assertStringEndsWith('/custom_events', $request->getUri()->getPath());
+        $this->assertStringEndsWith('/t/r', $request->getUri()->getPath());
 
         parse_str($request->getUri()->getQuery(), $query);
-        $this->assertSame(self::MOCK_API_KEY, $query['k']);
-        $this->assertSame(self::MOCK_DOMAIN, $query['u']);
+        $this->assertSame(self::MOCK_TRACKING_KEY, $query['k']);
+        $this->assertSame(self::MOCK_API_KEY, $query['api_key']);
 
         $body = json_decode((string) $request->getBody(), true, 512, JSON_THROW_ON_ERROR);
         $this->assertSame($payload['did'], $body['did']);
@@ -73,28 +71,66 @@ final class EventsApiTest extends TestCase
         $this->assertArrayNotHasKey('source', $body);
     }
 
+    /**
+     * Varianta REST {@see EventsApi::sendCustomApi} (doar email + event), spre `/custom_events`.
+     *
+     * @throws GuzzleException
+     * @throws \JsonException
+     */
+    public function testSendCustomApiSendsPostJsonToRestCustomEvents(): void
+    {
+        [$api, $container] = $this->apiWithMockResponses(
+            new Response(200, [], '{"ok":true}'),
+        );
+
+        $result = $api->sendCustomApi([
+            'email' => 'user@example.com',
+            'event' => 'product_viewed',
+        ]);
+
+        $this->assertSame(['ok' => true], $result);
+
+        $request = $this->lastRequest($container);
+        $this->assertSame('POST', $request->getMethod());
+        $this->assertStringEndsWith('/custom_events', $request->getUri()->getPath());
+
+        parse_str($request->getUri()->getQuery(), $query);
+        $this->assertSame(self::MOCK_API_KEY, $query['k']);
+        $this->assertSame(self::MOCK_DOMAIN, $query['u']);
+
+        $body = json_decode((string) $request->getBody(), true, 512, JSON_THROW_ON_ERROR);
+        $this->assertSame('user@example.com', $body['email']);
+        $this->assertSame('product_viewed', $body['event']);
+    }
+
     public function testSendCustomEventThrowsWhenDomainKeyMissing(): void
     {
         $client = new Client(['handler' => HandlerStack::create(new MockHandler([new Response(200)]))]);
         $config = new Config('', self::MOCK_API_KEY, self::MOCK_BASE_URL);
-        $api = new EventsApi(new ApiContext(new ApiGateway($config, 0, $client), $config));
+        $api = new EventsApi($this->makeApiContextWithMockClient($config, $client));
 
         $this->expectException(ValidationException::class);
         $this->expectExceptionMessage('Customer ID not provided.');
 
-        $api->sendCustom($this->validSendCustomEventPayload());
+        $api->sendCustomApi([
+            'email' => 'user@example.com',
+            'event' => 'product_viewed',
+        ]);
     }
 
     public function testSendCustomEventThrowsWhenApiKeyMissing(): void
     {
         $client = new Client(['handler' => HandlerStack::create(new MockHandler([new Response(200)]))]);
         $config = new Config(self::MOCK_DOMAIN, '', self::MOCK_BASE_URL);
-        $api = new EventsApi(new ApiContext(new ApiGateway($config, 0, $client), $config));
+        $api = new EventsApi($this->makeApiContextWithMockClient($config, $client));
 
         $this->expectException(ValidationException::class);
         $this->expectExceptionMessage('Rest key not provided.');
 
-        $api->sendCustom($this->validSendCustomEventPayload());
+        $api->sendCustomApi([
+            'email' => 'user@example.com',
+            'event' => 'product_viewed',
+        ]);
     }
 
     public function testSendCustomEventThrowsWhenEmailInvalid(): void
@@ -161,11 +197,11 @@ final class EventsApiTest extends TestCase
 
         $request = $this->lastRequest($container);
         $this->assertSame('POST', $request->getMethod());
-        $this->assertStringEndsWith('/view_homepage', $request->getUri()->getPath());
+        $this->assertStringEndsWith('/t/r', $request->getUri()->getPath());
 
         parse_str($request->getUri()->getQuery(), $query);
-        $this->assertSame(self::MOCK_API_KEY, $query['k']);
-        $this->assertSame(self::MOCK_DOMAIN, $query['u']);
+        $this->assertSame(self::MOCK_TRACKING_KEY, $query['k']);
+        $this->assertSame(self::MOCK_API_KEY, $query['api_key']);
 
         $body = json_decode((string) $request->getBody(), true, 512, JSON_THROW_ON_ERROR);
         $this->assertSame($payload['did'], $body['did']);
@@ -237,11 +273,11 @@ final class EventsApiTest extends TestCase
 
         $request = $this->lastRequest($container);
         $this->assertSame('POST', $request->getMethod());
-        $this->assertStringEndsWith('/initiate_checkout', $request->getUri()->getPath());
+        $this->assertStringEndsWith('/t/r', $request->getUri()->getPath());
 
         parse_str($request->getUri()->getQuery(), $query);
-        $this->assertSame(self::MOCK_API_KEY, $query['k']);
-        $this->assertSame(self::MOCK_DOMAIN, $query['u']);
+        $this->assertSame(self::MOCK_TRACKING_KEY, $query['k']);
+        $this->assertSame(self::MOCK_API_KEY, $query['api_key']);
 
         $body = json_decode((string) $request->getBody(), true, 512, JSON_THROW_ON_ERROR);
         $this->assertSame($payload['did'], $body['did']);
@@ -295,11 +331,11 @@ final class EventsApiTest extends TestCase
 
         $request = $this->lastRequest($container);
         $this->assertSame('POST', $request->getMethod());
-        $this->assertStringEndsWith('/search', $request->getUri()->getPath());
+        $this->assertStringEndsWith('/t/r', $request->getUri()->getPath());
 
         parse_str($request->getUri()->getQuery(), $query);
-        $this->assertSame(self::MOCK_API_KEY, $query['k']);
-        $this->assertSame(self::MOCK_DOMAIN, $query['u']);
+        $this->assertSame(self::MOCK_TRACKING_KEY, $query['k']);
+        $this->assertSame(self::MOCK_API_KEY, $query['api_key']);
 
         $body = json_decode((string) $request->getBody(), true, 512, JSON_THROW_ON_ERROR);
         $this->assertSame($payload['did'], $body['did']);
@@ -357,11 +393,11 @@ final class EventsApiTest extends TestCase
 
         $request = $this->lastRequest($container);
         $this->assertSame('POST', $request->getMethod());
-        $this->assertStringEndsWith('/set_email', $request->getUri()->getPath());
+        $this->assertStringEndsWith('/t/r', $request->getUri()->getPath());
 
         parse_str($request->getUri()->getQuery(), $query);
-        $this->assertSame(self::MOCK_API_KEY, $query['k']);
-        $this->assertSame(self::MOCK_DOMAIN, $query['u']);
+        $this->assertSame(self::MOCK_TRACKING_KEY, $query['k']);
+        $this->assertSame(self::MOCK_API_KEY, $query['api_key']);
 
         $body = json_decode((string) $request->getBody(), true, 512, JSON_THROW_ON_ERROR);
         $this->assertSame($payload['did'], $body['did']);
@@ -438,11 +474,11 @@ final class EventsApiTest extends TestCase
 
         $request = $this->lastRequest($container);
         $this->assertSame('POST', $request->getMethod());
-        $this->assertStringEndsWith('/view_product', $request->getUri()->getPath());
+        $this->assertStringEndsWith('/t/r', $request->getUri()->getPath());
 
         parse_str($request->getUri()->getQuery(), $query);
-        $this->assertSame(self::MOCK_API_KEY, $query['k']);
-        $this->assertSame(self::MOCK_DOMAIN, $query['u']);
+        $this->assertSame(self::MOCK_TRACKING_KEY, $query['k']);
+        $this->assertSame(self::MOCK_API_KEY, $query['api_key']);
 
         $body = json_decode((string) $request->getBody(), true, 512, JSON_THROW_ON_ERROR);
         $this->assertSame($payload['did'], $body['did']);
@@ -523,11 +559,11 @@ final class EventsApiTest extends TestCase
 
         $request = $this->lastRequest($container);
         $this->assertSame('POST', $request->getMethod());
-        $this->assertStringEndsWith('/add_to_cart', $request->getUri()->getPath());
+        $this->assertStringEndsWith('/t/r', $request->getUri()->getPath());
 
         parse_str($request->getUri()->getQuery(), $query);
-        $this->assertSame(self::MOCK_API_KEY, $query['k']);
-        $this->assertSame(self::MOCK_DOMAIN, $query['u']);
+        $this->assertSame(self::MOCK_TRACKING_KEY, $query['k']);
+        $this->assertSame(self::MOCK_API_KEY, $query['api_key']);
 
         $body = json_decode((string) $request->getBody(), true, 512, JSON_THROW_ON_ERROR);
         $this->assertSame($payload['did'], $body['did']);
@@ -622,11 +658,11 @@ final class EventsApiTest extends TestCase
 
         $request = $this->lastRequest($container);
         $this->assertSame('POST', $request->getMethod());
-        $this->assertStringEndsWith('/remove_from_cart', $request->getUri()->getPath());
+        $this->assertStringEndsWith('/t/r', $request->getUri()->getPath());
 
         parse_str($request->getUri()->getQuery(), $query);
-        $this->assertSame(self::MOCK_API_KEY, $query['k']);
-        $this->assertSame(self::MOCK_DOMAIN, $query['u']);
+        $this->assertSame(self::MOCK_TRACKING_KEY, $query['k']);
+        $this->assertSame(self::MOCK_API_KEY, $query['api_key']);
 
         $body = json_decode((string) $request->getBody(), true, 512, JSON_THROW_ON_ERROR);
         $this->assertSame($payload['did'], $body['did']);
@@ -670,11 +706,11 @@ final class EventsApiTest extends TestCase
 
         $request = $this->lastRequest($container);
         $this->assertSame('POST', $request->getMethod());
-        $this->assertStringEndsWith('/add_to_wishlist', $request->getUri()->getPath());
+        $this->assertStringEndsWith('/t/r', $request->getUri()->getPath());
 
         parse_str($request->getUri()->getQuery(), $query);
-        $this->assertSame(self::MOCK_API_KEY, $query['k']);
-        $this->assertSame(self::MOCK_DOMAIN, $query['u']);
+        $this->assertSame(self::MOCK_TRACKING_KEY, $query['k']);
+        $this->assertSame(self::MOCK_API_KEY, $query['api_key']);
 
         $body = json_decode((string) $request->getBody(), true, 512, JSON_THROW_ON_ERROR);
         $this->assertSame('add_to_wishlist', $body['event']);
@@ -698,7 +734,7 @@ final class EventsApiTest extends TestCase
         $this->assertSame(['ok' => true], $result);
 
         $request = $this->lastRequest($container);
-        $this->assertStringEndsWith('/remove_from_wishlist', $request->getUri()->getPath());
+        $this->assertStringEndsWith('/t/r', $request->getUri()->getPath());
 
         $body = json_decode((string) $request->getBody(), true, 512, JSON_THROW_ON_ERROR);
         $this->assertSame('remove_from_wishlist', $body['event']);
@@ -708,7 +744,7 @@ final class EventsApiTest extends TestCase
      * @throws GuzzleException
      * @throws \JsonException
      */
-    public function testServeJavascriptSendsPostJsonBodyWithK(): void
+    public function testServeJavascriptSendsGetWithTrackingPathAndQuery(): void
     {
         [$api, $container] = $this->apiWithMockResponses(
             new Response(200, [], '{}'),
@@ -717,15 +753,14 @@ final class EventsApiTest extends TestCase
         $api->serveJavascript('abc123');
 
         $request = $this->lastRequest($container);
-        $this->assertSame('POST', $request->getMethod());
-        $this->assertStringEndsWith('/t/j/s', $request->getUri()->getPath());
+        $this->assertSame('GET', $request->getMethod());
+        $this->assertStringEndsWith('/t/j/abc123', $request->getUri()->getPath());
 
         parse_str($request->getUri()->getQuery(), $query);
-        $this->assertSame(self::MOCK_API_KEY, $query['k']);
-        $this->assertSame(self::MOCK_DOMAIN, $query['u']);
+        $this->assertSame('abc123', $query['k']);
+        $this->assertSame(self::MOCK_API_KEY, $query['api_key']);
 
-        $body = json_decode((string) $request->getBody(), true, 512, JSON_THROW_ON_ERROR);
-        $this->assertSame('abc123', $body['k']);
+        $this->assertSame('', (string) $request->getBody());
     }
 
     public function testServeJavascriptThrowsWhenKTooShort(): void

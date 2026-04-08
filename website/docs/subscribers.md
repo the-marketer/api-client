@@ -13,7 +13,7 @@ $subscribersApi = $client->subscribers();
 
 ## `addSubscriber`
 
-Adds or updates a subscriber.
+Adds or updates a subscriber via the **synchronous** endpoint (`/add_subscriber_sync`).
 
 **Input**
 
@@ -41,6 +41,16 @@ $result = $subscribersApi->addSubscriber([
 ]);
 ```
 
+## `addSubscriberAsync`
+
+Same payload shape as `addSubscriber`, but uses the **async** path (`/add_subscriber`).
+
+```php
+$result = $subscribersApi->addSubscriberAsync([
+    'email' => 'john@doe.com',
+]);
+```
+
 ## `addSubscriberBulk`
 
 Adds subscribers in bulk.
@@ -48,7 +58,7 @@ Adds subscribers in bulk.
 **Input**
 
 - `subscribers` (`list<array<string, mixed>>`): list of subscriber payloads.
-  - each item uses the same fields as `addSubscriber` payload (see above).
+  - each item uses the same fields as `addSubscriber` / `addSubscriberAsync` (see above).
 
 **Response**
 
@@ -77,34 +87,6 @@ Adds a subscriber by phone.
 
 ```php
 $result = $subscribersApi->addSubscriberByPhone('+40123456789', 'John', 'Doe');
-```
-
-## `addSubscriberSync`
-
-Syncs subscriber data.
-
-**Input**
-
-- `payload` (`array<string, mixed>`):
-  - `email` (`string`, required)
-  - `add_tags` (`?string`)
-  - `firstname` (`?string`)
-  - `lastname` (`?string`)
-  - `phone` (`?string`)
-  - `city` (`?string`)
-  - `country` (`?string`)
-  - `birthday` (`?string`)
-  - `channels` (`?string`)
-  - `attributes` (`?array`)
-
-**Response**
-
-- `array`
-
-```php
-$result = $subscribersApi->addSubscriberSync([
-    'email' => 'john@doe.com',
-]);
 ```
 
 ## `anonymizeEmail`
@@ -250,9 +232,9 @@ Updates subscriber tags.
 **Input**
 
 - `email` (`string`, required)
-- `addTags` (`list<string|int>`) (default: `[]`) (sent as `add_tags`)
-- `removeTags` (`list<string|int>`) (default: `[]`) (sent as `remove_tags`)
-- `overwriteExisting` (`?int`) (default: `null`) (sent as `overwrite_existing`)
+- `addTags` (`list<string|int>`) (default: `[]`) — sent as `add_tags`
+- `removeTags` (`list<string|int>`) (default: `[]`) — sent as `remove_tags`
+- `overwriteExisting` (`?int`) (default: `null`) — sent as `overwrite_existing`
 
 **Response**
 
@@ -261,9 +243,8 @@ Updates subscriber tags.
 ```php
 $result = $subscribersApi->updateTags(
     'john@doe.com',
-    addTags: [10, 12],
-    removeTags: [5],
-    overwriteExisting: 1,
+    [10, 12],
+    [5],
+    1,
 );
 ```
-

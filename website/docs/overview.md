@@ -20,10 +20,15 @@ title: Overview
 
 ## Core usage model
 
-1. Create a `Client` using `customerId` and `restKey`.
-2. Access a module (for example `orders()`).
-3. Send a validated payload.
-4. Handle response data or exceptions.
+1. Create a `Client` with an **array** config: at minimum `customerId` and `restKey`; optionally `trackingKey`, `restUrl`, `trackingUrl`, `maxRetryAttempts` (see [Authentication](./authentication.md)).
+2. Internally, `Client` builds `Config` and `ApiContext`. The context exposes:
+   - **REST** traffic via `ApiGateway` (query `k` / `u` for API calls under `Config::baseRestUrl()`).
+   - **Tracking** traffic via `TrackingGateway` when you use modules that send behavioral data to the tracking host.
+3. Access a module (for example `orders()`).
+4. Send a validated payload.
+5. Handle response data or exceptions.
+
+Base URL for REST is built as `{restUrl}/api/{apiVersion}/` (default `apiVersion` `v1`) — see `Config::baseRestUrl()` in `src/Common/Config.php`.
 
 ## Available API modules
 
@@ -37,7 +42,7 @@ title: Overview
 - [`coupons()`](./coupons.md)
 - [`loyalty()`](./loyalty.md)
 - [`reviews()`](./reviews.md)
-- [`appPush()`](./app-push.md)
+- [`mobilePush()` (mobile push)](./app-push.md)
 
 Utilities:
 

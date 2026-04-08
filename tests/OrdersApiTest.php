@@ -10,10 +10,8 @@ use GuzzleHttp\Handler\MockHandler;
 use GuzzleHttp\HandlerStack;
 use GuzzleHttp\Psr7\Response;
 use NotificationService\Sdk\Internal\OrdersApi;
-use TheMarketer\ApiClient\Common\ApiContext;
 use TheMarketer\ApiClient\Common\Config;
 use TheMarketer\ApiClient\Exception\ValidationException;
-use TheMarketer\ApiClient\Gateways\ApiGateway;
 
 final class OrdersApiTest extends TestCase
 {
@@ -122,7 +120,7 @@ final class OrdersApiTest extends TestCase
 
         $products = $this->minimalValidSaveOrderProducts();
 
-        $api->save([
+        $api->saveOrder([
             'number' => 1001,
             'email_address' => 'buyer@example.com',
             'phone' => '+40123456789',
@@ -276,7 +274,7 @@ final class OrdersApiTest extends TestCase
     {
         $client = new Client(['handler' => HandlerStack::create(new MockHandler([new Response(200)]))]);
         $config = new Config('', self::MOCK_API_KEY, self::MOCK_BASE_URL);
-        $api = new OrdersApi(new ApiContext(new ApiGateway($config, 0, $client), $config));
+        $api = new OrdersApi($this->makeApiContextWithMockClient($config, $client));
 
         $this->expectException(ValidationException::class);
         $this->expectExceptionMessage('Customer ID not provided.');
@@ -288,7 +286,7 @@ final class OrdersApiTest extends TestCase
     {
         $client = new Client(['handler' => HandlerStack::create(new MockHandler([new Response(200)]))]);
         $config = new Config(self::MOCK_DOMAIN, '', self::MOCK_BASE_URL);
-        $api = new OrdersApi(new ApiContext(new ApiGateway($config, 0, $client), $config));
+        $api = new OrdersApi($this->makeApiContextWithMockClient($config, $client));
 
         $this->expectException(ValidationException::class);
         $this->expectExceptionMessage('Rest key not provided.');

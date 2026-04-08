@@ -1,6 +1,6 @@
 # Orders
 
-Acest modul acopera operatiunile uzuale legate de comenzi.
+Acest modul acoperă sincronizarea comenzilor, statusul, feed-uri și statistici ecommerce.
 
 ## Access the module
 
@@ -8,47 +8,48 @@ Acest modul acopera operatiunile uzuale legate de comenzi.
 $ordersApi = $client->orders();
 ```
 
-## Save order
+Nu există metode `save()` sau aliasuri scurtate — folosește `saveOrder()` / `saveOrderRetail()` cu câmpurile din DTO (`number`, `email_address`, linii produs cu `variation_sku`, etc.).
+
+## saveOrder (exemplu minim)
 
 ```php
-$payload = [
-    'order_no' => '1001',
-    'email' => 'john@doe.com',
+$result = $ordersApi->saveOrder([
+    'number' => 1001,
+    'email_address' => 'john@doe.com',
+    'phone' => '+40123456789',
+    'firstname' => 'John',
+    'lastname' => 'Doe',
+    'city' => 'Bucharest',
+    'county' => 'RO',
+    'address' => 'Street 1',
+    'discount_value' => 0.0,
+    'discount_code' => '-',
+    'shipping' => 0.0,
+    'tax' => 0.0,
+    'total_value' => 99.99,
     'products' => [
         [
-            'sku' => 'SKU-123',
-            'quantity' => 1,
+            'product_id' => 123,
             'price' => 99.99,
+            'quantity' => 1,
+            'variation_sku' => 'SKU-123',
         ],
     ],
-];
-
-$result = $ordersApi->saveOrder($payload);
+]);
 ```
 
-## Save order alias
+## Alte metode
 
-In unele zone ai aliasuri de metoda pentru ergonomie:
-
-```php
-$result = $ordersApi->save($payload);
-```
-
-## Recommended payload quality
-
-- `order_no` unic per comanda.
-- Email valid in `email`.
-- Lista de `products` nevida.
-- Pentru fiecare produs: SKU, cantitate si pret corecte.
+Vezi documentația extinsă în site: `website/docs/orders.md` (sau sursa `src/Api/OrdersApi.php`) pentru `saveOrderRetail`, `updateFeedUrl`, `updateOrderFeedUrl`, `updateOrderStatus`, `getEcommerceStats`.
 
 ## Validation and error flow
 
-1. DTO-ul valideaza local campurile.
-2. Daca validarea pica, apare `ValidationException`.
-3. Daca API raspunde cu eroare, apare exceptia mapata de client.
+1. DTO-ul validează local câmpurile.
+2. Dacă validarea pică, apare `ValidationException`.
+3. Dacă API răspunde cu eroare, apare excepția mapată de client.
 
 ## Best practices
 
-- Logheaza payload minim + raspunsul API (fara date sensibile).
-- Foloseste idempotenta in apeluri duplicate din job-uri/retry.
-- Ruleaza teste de integrare cu payload-uri reale in mediu non-production.
+- Loghează payload minim + răspunsul API (fără date sensibile).
+- Folosește idempotență în apeluri duplicate din job-uri/retry.
+- Rulează teste de integrare cu payload-uri reale în mediu non-production.

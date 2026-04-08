@@ -12,6 +12,7 @@ use Psr\Http\Message\RequestInterface;
 use TheMarketer\ApiClient\Common\ApiContext;
 use TheMarketer\ApiClient\Common\Config;
 use TheMarketer\ApiClient\Gateways\ApiGateway;
+use TheMarketer\ApiClient\Gateways\TrackingGateway;
 
 abstract class TestCase extends OrchestraTestCase
 {
@@ -20,6 +21,28 @@ abstract class TestCase extends OrchestraTestCase
     protected const MOCK_DOMAIN = 'domain-1';
 
     protected const MOCK_API_KEY = 'api-secret';
+
+    /** Cheie de tracking nevidă pentru {@see TrackingGateway} în testele care folosesc `context->tracking`. */
+    protected const MOCK_TRACKING_KEY = 'track-key-123456789012';
+
+    /**
+     * Construiește un {@see ApiContext} cu gateway-uri REST și tracking care folosesc același client Guzzle (ex. mock).
+     */
+    protected function makeApiContextWithMockClient(Config $config, Client $guzzleClient): ApiContext
+    {
+        $restGateway = new ApiGateway($config, 0, $guzzleClient);
+        $trackingGateway = new TrackingGateway($config, 0, $guzzleClient);
+
+        $context = new ApiContext($config, 0);
+        $gatewaysProp = new \ReflectionProperty(ApiContext::class, 'gateways');
+        $gatewaysProp->setAccessible(true);
+        $gatewaysProp->setValue($context, [
+            'rest' => $restGateway,
+            'tracking' => $trackingGateway,
+        ]);
+
+        return $context;
+    }
 
     /**
      * @template T of object
@@ -33,7 +56,13 @@ abstract class TestCase extends OrchestraTestCase
     protected function createApiWithMock(string $apiClass, Response ...$responses): array
     {
         return $this->createApiWithMockUsingConfig(
-            new Config(self::MOCK_DOMAIN, self::MOCK_API_KEY, self::MOCK_BASE_URL),
+            new Config(
+                self::MOCK_DOMAIN,
+                self::MOCK_API_KEY,
+                self::MOCK_BASE_URL,
+                self::MOCK_BASE_URL,
+                self::MOCK_TRACKING_KEY,
+            ),
             $apiClass,
             ...$responses,
         );
@@ -63,8 +92,9 @@ abstract class TestCase extends OrchestraTestCase
         }
         $mock = new MockHandler($queue);
         $client = new Client(['handler' => $mock]);
-        $gateway = new ApiGateway($config, 0, $client);
-        $api = new $apiClass(new ApiContext($gateway, $config));
+        $context = $this->makeApiContextWithMockClient($config, $client);
+
+        $api = new $apiClass($context);
 
         return [$api, $bucket];
     }

@@ -12,13 +12,18 @@ title: Errors and Troubleshooting
 | `405` | `MethodNotAllowedException` |
 | Other API errors | `ApiException` |
 
-Local payload/config validation failures are raised as `ValidationException`.
+Local payload/config validation failures are raised as `TheMarketer\ApiClient\Exception\ValidationException`.
+
+**Before any HTTP request**, gateways also validate auth context:
+
+- **REST** (`ApiGateway`): `customerId` and `restKey` must be non-empty.
+- **Tracking** (`TrackingGateway`): `trackingKey` must be non-empty for tracking endpoints.
 
 ## Most common exceptions
 
 ## `ValidationException`
 
-Appears when payload input is invalid before request execution.
+Appears when payload input is invalid before request execution, or when required config (customer id, rest key, tracking key) is missing for the gateway in use.
 
 Typical causes:
 
@@ -26,6 +31,7 @@ Typical causes:
 - invalid email format
 - invalid enum/choice values
 - invalid date format
+- empty `trackingKey` while calling tracking-only flows (configure `trackingKey` in `Client` array)
 
 ## `UnauthorizedException`
 
@@ -81,7 +87,8 @@ Typical causes:
 
 ## Fast troubleshooting checklist
 
-- Run `checkApiCredentials()` before business calls.
+- Run `checkApiCredentials()` before business calls (returns `bool` on `Client`; see [Credentials and Utilities](./credentials-utilities.md)).
+- For tracking features, ensure `trackingKey` is set in the client config and use `checkCredentials($key)` as needed.
 - Log request/response metadata.
 - Validate payload shape before sending.
 - Reproduce with a minimal payload.

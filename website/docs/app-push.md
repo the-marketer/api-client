@@ -1,9 +1,9 @@
 ---
 sidebar_position: 15
-title: App Push
+title: Mobile push
 ---
 
-Manage push notification tokens.
+Manage mobile push notification tokens through **`Client::mobilePush()`** (`MobilePushApi`).
 
 ## Access module
 
@@ -13,7 +13,7 @@ $mobilePushApi = $client->mobilePush();
 
 ## `removeToken`
 
-Removes an app push token.
+Removes a mobile push token.
 
 **Input**
 
@@ -33,7 +33,7 @@ $result = $mobilePushApi->removeToken(
 
 ## `setToken`
 
-Sets an app push token.
+Sets a mobile push token.
 
 **Input**
 
@@ -52,4 +52,3 @@ $result = $mobilePushApi->setToken(
     'android'
 );
 ```
-

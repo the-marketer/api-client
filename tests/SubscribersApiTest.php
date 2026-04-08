@@ -11,10 +11,8 @@ use GuzzleHttp\HandlerStack;
 use GuzzleHttp\Psr7\Response;
 use JsonException;
 use NotificationService\Sdk\Internal\SubscribersApi;
-use TheMarketer\ApiClient\Common\ApiContext;
 use TheMarketer\ApiClient\Common\Config;
 use TheMarketer\ApiClient\Exception\ValidationException;
-use TheMarketer\ApiClient\Gateways\ApiGateway;
 
 final class SubscribersApiTest extends TestCase
 {
@@ -102,7 +100,7 @@ final class SubscribersApiTest extends TestCase
 
         $request = $this->lastRequest($container);
         $this->assertSame('POST', $request->getMethod());
-        $this->assertStringEndsWith('/add_subscriber', $request->getUri()->getPath());
+        $this->assertStringEndsWith('/add_subscriber_sync', $request->getUri()->getPath());
 
         parse_str($request->getUri()->getQuery(), $query);
         $this->assertSame(self::MOCK_API_KEY, $query['k']);
@@ -290,7 +288,7 @@ final class SubscribersApiTest extends TestCase
     {
         $client = new Client(['handler' => HandlerStack::create(new MockHandler([new Response(200)]))]);
         $config = new Config('', self::MOCK_API_KEY, self::MOCK_BASE_URL);
-        $api = new SubscribersApi(new ApiContext(new ApiGateway($config, 0, $client), $config));
+        $api = new SubscribersApi($this->makeApiContextWithMockClient($config, $client));
 
         $this->expectException(ValidationException::class);
         $this->expectExceptionMessage('Customer ID not provided.');
@@ -311,7 +309,7 @@ final class SubscribersApiTest extends TestCase
     {
         $client = new Client(['handler' => HandlerStack::create(new MockHandler([new Response(200)]))]);
         $config = new Config(self::MOCK_DOMAIN, '', self::MOCK_BASE_URL);
-        $api = new SubscribersApi(new ApiContext(new ApiGateway($config, 0, $client), $config));
+        $api = new SubscribersApi($this->makeApiContextWithMockClient($config, $client));
 
         $this->expectException(ValidationException::class);
         $this->expectExceptionMessage('Rest key not provided.');
@@ -418,7 +416,7 @@ final class SubscribersApiTest extends TestCase
             new Response(200, [], '{"synced":true}'),
         );
 
-        $result = $api->addSubscriberSync([
+        $result = $api->addSubscriber([
             'email' => 'sync@example.com',
             'firstname' => 'S',
             'lastname' => 'Y',
@@ -548,7 +546,7 @@ final class SubscribersApiTest extends TestCase
             new Response(200, [], '{"ok":true}'),
         );
 
-        $result = $api->add(['email' => 'alias@example.com']);
+        $result = $api->addSubscriberAsync(['email' => 'alias@example.com']);
 
         $this->assertSame(['ok' => true], $result);
 

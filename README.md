@@ -55,11 +55,13 @@ composer require themarketer/api-client
 
 ## Arhitectură pe scurt
 
-- **`TheMarketer\ApiClient\Client`** — punctul unic de intrare: primește `customerId` și `restKey`, construiește **`ApiContext`** + **`ApiGateway`** (Guzzle cu retry opțional) și expune metode pentru fiecare zonă API (`subscribers()`, `orders()`, `checkCredentials()`, etc.).
-- **`ApiGateway`** — adaugă în query autentificarea `k` (rest key) și `u` (customer id), trimite JSON la POST acolo unde DTO-ul o cere, mapează erorile HTTP la excepții (`UnauthorizedException`, `ApiException`, …).
-- **Clasele din `src/Api/`** (`SubscribersApi`, `OrdersApi`, …) — încapsulează endpoint-urile; validarea inputului se face în **`src/DTO/`**.
+- **`TheMarketer\ApiClient\Client`** — punct unic de intrare: primește un **array** de configurare (`customerId`, `restKey`, opțional `trackingKey`, `restUrl`, `trackingUrl`, `maxRetryAttempts`), construiește **`Config`** + **`ApiContext`** și expune modulele API (`subscribers()`, `orders()`, `checkCredentials()`, etc.).
+- **`ApiContext`** — oferă gateway **REST** (`ApiGateway`) și **tracking** (`TrackingGateway`); ambele folosesc Guzzle (retry configurabil).
+- **`ApiGateway`** — pentru REST: query `k` (rest key) și `u` (customer id); JSON la POST unde cere DTO-ul; mapează erorile HTTP la excepții.
+- **`TrackingGateway`** — pentru host-ul de tracking: necesită `trackingKey` în config; alt set de parametri de autentificare în query.
+- **Clasele din `src/Api/`** — încapsulează endpoint-urile; validarea inputului se face în **`src/DTO/`**.
 
-Baza URL pentru cereri este `Config::baseUrl()` = `{apiUrl}/api/{version}` (implicit `apiVersion` = `v1`). Constructorul `Client` folosește `new Config($customerId, $restKey)` — dacă ai nevoie de alt host decât cel din `Config` (ex. producție), trebuie fie extins clientul, fie modificat `Config` în sursă; verifică valoarea implicită a `apiUrl` în `src/Common/Config.php` pentru mediul tău.
+Baza URL pentru REST este `Config::baseRestUrl()` = `{restUrl}/api/{apiVersion}/` (implicit `apiVersion` = `v1`). URL-urile implicite sunt în `Client` / `Config` (`src/Common/Config.php`).
 
 ---
 
@@ -68,11 +70,12 @@ Baza URL pentru cereri este `Config::baseUrl()` = `{apiUrl}/api/{version}` (impl
 ```php
 use TheMarketer\ApiClient\Client;
 
-$client = new Client(
-    customerId: 'ID_CONT_THE_MARKETER',  // devine query `u`
-    restKey: 'CHEIA_REST',                 // devine query `k`
-    maxRetryAttempts: 1,                   // opțional: reîncercări la erori tranzitorii (0 = fără retry)
-);
+$client = new Client([
+    'customerId' => 'ID_CONT_THE_MARKETER', // query `u` pe REST
+    'restKey' => 'CHEIA_REST',               // query `k` pe REST
+    'trackingKey' => 'CHEIE_TRACKING',     // opțional: pentru evenimente tracking
+    'maxRetryAttempts' => 1,                // opțional
+]);
 
 // Exemple de acces la API-uri grupate
 $client->subscribers()->addSubscriber([/* … */]);
@@ -80,29 +83,26 @@ $client->orders()->saveOrder([/* … */]);
 $client->transactionals()->sendEmail([/* … */]);
 ```
 
-Aliasuri utile: `add()` → `addSubscriber()`, `save()` → `saveOrder()` (unde există).
-
 ---
 
 ## Credențiale și utilitare (direct pe `Client`)
 
 Aceste metode nu trec prin `subscribers()` / `orders()`; sunt delegate la **`CredentialsClient`** intern.
 
-### `checkCredentials(string $trackingKey): array`
+### `checkCredentials(string $trackingKey): bool`
 
-Verifică credențialele: tracking key-ul este trimis în **body JSON** (împreună cu `r` și `u` derivate din config), pe lângă query-ul `k`/`u` standard.
+Verifică credențialele (tracking key în **body JSON** pe REST, vezi `CredentialsClient`). Pe **`Client`**, returnează **`true`** dacă răspunsul decodat este array gol `[]`, altfel **`false`**. Pentru JSON-ul brut ca `array`, folosește `CredentialsClient::checkCredentials()` cu același context.
 
 ```php
-$result = $client->checkCredentials('CHEIE_TRACKING');
-// ex. ['success' => true] — JSON decodat de la API
+$ok = $client->checkCredentials('CHEIE_TRACKING');
 ```
 
-### `checkApiCredentials(): array`
+### `checkApiCredentials(): bool`
 
-POST către endpoint-ul de verificare API; răspuns JSON decodat ca `array`.
+Pe **`Client`**, returnează **`bool`** (același criteriu: corp JSON → array gol = succes). Pentru răspuns decodat complet, vezi `CredentialsClient::checkApiCredentials()`.
 
 ```php
-$result = $client->checkApiCredentials();
+$ok = $client->checkApiCredentials();
 ```
 
 ### `getCosts()`, `getRealtimeVisitors()`, `getSmsCredit(): array`
@@ -123,7 +123,7 @@ Returnează **conținutul brut** al răspunsului (nu JSON).
 
 ### `config(): Config`
 
-Acces la `customerId`, `restKey`, `baseUrl()` după nevoie.
+Acces la `customerId`, `restKey`, `baseRestUrl()`, `trackingKey()`, etc.
 
 ---
 
@@ -139,7 +139,7 @@ Acces la `customerId`, `restKey`, `baseUrl()` după nevoie.
 | `loyalty()` | Puncte loialitate |
 | `coupons()` | Cupoane disponibile, salvare |
 | `reviews()` | Recenzii produse, merchant, setări Merchant Pro |
-| `mobilePush()` | Token-uri push (mobile) |
+| `mobilePush()` | Push mobil (token-uri iOS/Android) |
 | `events()` | Evenimente personalizate |
 | `reports()` | Rapoarte email/SMS/push/forms/audience |
 
@@ -152,7 +152,7 @@ Detalii despre parametri: fișierele din `src/Api/*Api.php` și `src/DTO/**`. Te
 
 ### Recenzii
 
-- **`get()`** returnează **string** (conținut răspuns, nu `array` decodat automat).
+- **`getProductReviews()`** returnează **string** (conținut răspuns, nu `array` decodat automat).
 
 ### Rapoarte
 

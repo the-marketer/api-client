@@ -5,6 +5,8 @@ title: Orders
 
 The Orders module manages order syncing, order status updates, feed URL setup, and ecommerce stats.
 
+Obtain `$client` via `new Client([...])` as described in [Authentication](./authentication.md).
+
 ## Access module
 
 ```php

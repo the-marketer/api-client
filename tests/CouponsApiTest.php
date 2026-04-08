@@ -10,10 +10,8 @@ use GuzzleHttp\Handler\MockHandler;
 use GuzzleHttp\HandlerStack;
 use GuzzleHttp\Psr7\Response;
 use NotificationService\Sdk\Internal\CouponsApi;
-use TheMarketer\ApiClient\Common\ApiContext;
 use TheMarketer\ApiClient\Common\Config;
 use TheMarketer\ApiClient\Exception\ValidationException;
-use TheMarketer\ApiClient\Gateways\ApiGateway;
 
 final class CouponsApiTest extends TestCase
 {
@@ -96,7 +94,7 @@ final class CouponsApiTest extends TestCase
     {
         $client = new Client(['handler' => HandlerStack::create(new MockHandler([new Response(200)]))]);
         $config = new Config('', self::MOCK_API_KEY, self::MOCK_BASE_URL);
-        $api = new CouponsApi(new ApiContext(new ApiGateway($config, 0, $client), $config));
+        $api = new CouponsApi($this->makeApiContextWithMockClient($config, $client));
 
         $this->expectException(ValidationException::class);
         $this->expectExceptionMessage('Customer ID not provided.');
@@ -108,7 +106,7 @@ final class CouponsApiTest extends TestCase
     {
         $client = new Client(['handler' => HandlerStack::create(new MockHandler([new Response(200)]))]);
         $config = new Config(self::MOCK_DOMAIN, '', self::MOCK_BASE_URL);
-        $api = new CouponsApi(new ApiContext(new ApiGateway($config, 0, $client), $config));
+        $api = new CouponsApi($this->makeApiContextWithMockClient($config, $client));
 
         $this->expectException(ValidationException::class);
         $this->expectExceptionMessage('Rest key not provided.');
@@ -120,7 +118,7 @@ final class CouponsApiTest extends TestCase
     {
         $client = new Client(['handler' => HandlerStack::create(new MockHandler([new Response(200)]))]);
         $config = new Config('', self::MOCK_API_KEY, self::MOCK_BASE_URL);
-        $api = new CouponsApi(new ApiContext(new ApiGateway($config, 0, $client), $config));
+        $api = new CouponsApi($this->makeApiContextWithMockClient($config, $client));
 
         $this->expectException(ValidationException::class);
         $this->expectExceptionMessage('Customer ID not provided.');
@@ -132,7 +130,7 @@ final class CouponsApiTest extends TestCase
     {
         $client = new Client(['handler' => HandlerStack::create(new MockHandler([new Response(200)]))]);
         $config = new Config(self::MOCK_DOMAIN, '', self::MOCK_BASE_URL);
-        $api = new CouponsApi(new ApiContext(new ApiGateway($config, 0, $client), $config));
+        $api = new CouponsApi($this->makeApiContextWithMockClient($config, $client));
 
         $this->expectException(ValidationException::class);
         $this->expectExceptionMessage('Rest key not provided.');

@@ -4,10 +4,10 @@
 
 ## What this package does
 
-- Trimite request-uri HTTP catre endpoint-urile The Marketer.
-- Valideaza payload-urile local prin DTO-uri.
-- Returneaza raspunsuri JSON decodate pentru majoritatea metodelor.
-- Mapeaza erorile HTTP in exceptii clare.
+- Trimite request-uri HTTP către endpoint-urile The Marketer.
+- Validează payload-urile local prin DTO-uri.
+- Returnează răspunsuri JSON decodate pentru majoritatea metodelor.
+- Mapează erorile HTTP în excepții clare.
 
 ## Requirements
 
@@ -17,10 +17,13 @@
 
 ## Core usage model
 
-1. Creezi un `Client` cu `customerId` si `restKey`.
-2. Apelezi un modul (de exemplu `orders()`).
-3. Trimiteri payload valid catre metoda dorita.
-4. Procesezi raspunsul sau tratezi exceptiile.
+1. Creezi un `Client` cu un **array**: minim `customerId` și `restKey`; opțional `trackingKey`, `restUrl`, `trackingUrl`, `maxRetryAttempts`.
+2. `Client` construiește `Config` și `ApiContext` (REST prin `ApiGateway`, tracking prin `TrackingGateway` când e cazul).
+3. Apelezi un modul (de exemplu `orders()`).
+4. Trimite payload valid către metoda dorită.
+5. Procesezi răspunsul sau tratezi excepțiile.
+
+URL-ul de bază REST este `{restUrl}/api/{apiVersion}/` — vezi `Config::baseRestUrl()`.
 
 ## Available API modules
 
@@ -32,10 +35,10 @@
 - `loyalty()`
 - `coupons()`
 - `reviews()`
-- `mobilePush()`
+- `mobilePush()` (push mobil)
 - `events()`
 - `reports()`
 
 ## Next step
 
-Continua cu [Quickstart](./quickstart.md) pentru primul request functional.
+Continuă cu [Quickstart](./quickstart.md) pentru primul request funcțional.

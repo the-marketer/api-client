@@ -3,7 +3,7 @@ sidebar_position: 9
 title: Transactionals
 ---
 
-Send transactional email and SMS messages.
+Send transactional email and SMS messages (and queued / bulk email).
 
 ## Access module
 
@@ -13,7 +13,7 @@ $transactionalsApi = $client->transactionals();
 
 ## `sendEmail`
 
-Sends a transactional email.
+Sends a transactional email (immediate).
 
 **Input**
 
@@ -39,6 +39,33 @@ $result = $transactionalsApi->sendEmail([
 ]);
 ```
 
+## `sendEmailAsync`
+
+Same payload shape as `sendEmail`, but uses the **queue** endpoint (`/transactional/queue-send-email`).
+
+```php
+$result = $transactionalsApi->sendEmailAsync([
+    'to' => 'john@doe.com',
+    'subject' => 'Queued',
+    'body' => '<p>Later</p>',
+]);
+```
+
+## `sendEmailsBulk`
+
+Sends multiple emails in one request. Payload:
+
+- `emails`: non-empty list of objects, each valid as `sendEmail` payload.
+
+```php
+$result = $transactionalsApi->sendEmailsBulk([
+    'emails' => [
+        ['to' => 'a@example.com', 'subject' => 'S1', 'body' => 'B1'],
+        ['to' => 'b@example.com', 'subject' => 'S2', 'body' => 'B2'],
+    ],
+]);
+```
+
 ## `sendSms`
 
 Sends a transactional SMS.
@@ -58,4 +85,3 @@ $result = $transactionalsApi->sendSms(
     'Your order has been shipped.',
 );
 ```
-

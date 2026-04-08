@@ -10,10 +10,8 @@ use GuzzleHttp\Handler\MockHandler;
 use GuzzleHttp\HandlerStack;
 use GuzzleHttp\Psr7\Response;
 use NotificationService\Sdk\Internal\TransactionalsApi;
-use TheMarketer\ApiClient\Common\ApiContext;
 use TheMarketer\ApiClient\Common\Config;
 use TheMarketer\ApiClient\Exception\ValidationException;
-use TheMarketer\ApiClient\Gateways\ApiGateway;
 
 final class TransactionalsApiTest extends TestCase
 {
@@ -107,11 +105,39 @@ final class TransactionalsApiTest extends TestCase
         $this->assertSame('Your code is 1234', $body['content']);
     }
 
+    /**
+     * @throws GuzzleException
+     * @throws \JsonException
+     */
+    public function testSendEmailAsyncSendsPostToQueueSendEmail(): void
+    {
+        [$api, $container] = $this->apiWithMockResponses(
+            new Response(200, [], '{"queued":true}'),
+        );
+
+        $result = $api->sendEmailAsync([
+            'to' => 'async@example.com',
+            'subject' => 'Queued',
+            'body' => '<p>Later</p>',
+        ]);
+
+        $this->assertSame(['queued' => true], $result);
+
+        $request = $this->lastRequest($container);
+        $this->assertSame('POST', $request->getMethod());
+        $this->assertStringEndsWith('/transactional/queue-send-email', $request->getUri()->getPath());
+
+        $body = json_decode((string) $request->getBody(), true, 512, JSON_THROW_ON_ERROR);
+        $this->assertSame('async@example.com', $body['to']);
+        $this->assertSame('Queued', $body['subject']);
+        $this->assertSame('<p>Later</p>', $body['body']);
+    }
+
     public function testSendEmailThrowsWhenDomainKeyMissing(): void
     {
         $client = new Client(['handler' => HandlerStack::create(new MockHandler([new Response(200)]))]);
         $config = new Config('', self::MOCK_API_KEY, self::MOCK_BASE_URL);
-        $api = new TransactionalsApi(new ApiContext(new ApiGateway($config, 0, $client), $config));
+        $api = new TransactionalsApi($this->makeApiContextWithMockClient($config, $client));
 
         $this->expectException(ValidationException::class);
         $this->expectExceptionMessage('Customer ID not provided.');
@@ -127,7 +153,7 @@ final class TransactionalsApiTest extends TestCase
     {
         $client = new Client(['handler' => HandlerStack::create(new MockHandler([new Response(200)]))]);
         $config = new Config(self::MOCK_DOMAIN, '', self::MOCK_BASE_URL);
-        $api = new TransactionalsApi(new ApiContext(new ApiGateway($config, 0, $client), $config));
+        $api = new TransactionalsApi($this->makeApiContextWithMockClient($config, $client));
 
         $this->expectException(ValidationException::class);
         $this->expectExceptionMessage('Rest key not provided.');
@@ -143,7 +169,7 @@ final class TransactionalsApiTest extends TestCase
     {
         $client = new Client(['handler' => HandlerStack::create(new MockHandler([new Response(200)]))]);
         $config = new Config('', self::MOCK_API_KEY, self::MOCK_BASE_URL);
-        $api = new TransactionalsApi(new ApiContext(new ApiGateway($config, 0, $client), $config));
+        $api = new TransactionalsApi($this->makeApiContextWithMockClient($config, $client));
 
         $this->expectException(ValidationException::class);
 

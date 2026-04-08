@@ -11,6 +11,7 @@ use TheMarketer\ApiClient\DTO\Events\CustomEvent;
 use TheMarketer\ApiClient\DTO\Events\InitiateCheckoutEvent;
 use TheMarketer\ApiClient\DTO\Events\ProductLineEvent;
 use TheMarketer\ApiClient\DTO\Events\SearchEvent;
+use TheMarketer\ApiClient\DTO\Events\SendCustomEvent;
 use TheMarketer\ApiClient\DTO\Events\ServeJavascriptEvent;
 use TheMarketer\ApiClient\DTO\Events\SetEmailEvent;
 use TheMarketer\ApiClient\DTO\Events\ViewHomepageEvent;
@@ -35,13 +36,16 @@ class EventsApi extends AbstractApi
      * @throws JsonException
      * @throws GuzzleException
      */
-    // Legacy payload (email + event only):
-    // public function sendCustom(array $payload): array
-    // {
-    //     $dto = \TheMarketer\ApiClient\DTO\Events\SendCustomEvent::validateAndCreate($payload);
-    //     return $this->context->http->post('/custom_events', $dto->toApiPayload());
-    // }
+    public function sendCustomApi(array $payload): array
+    {
+        $dto = SendCustomEvent::validateAndCreate($payload);
+        return $this->context->rest->post('/custom_events', $dto->toApiPayload());
+    }
 
+    /**
+     * @throws GuzzleException
+     * @throws JsonException
+     */
     public function sendCustom(array $payload): array
     {
         $dto = CustomEvent::validateAndCreate($payload);
@@ -144,7 +148,6 @@ class EventsApi extends AbstractApi
     public function search(array $payload): array
     {
         $dto = SearchEvent::validateAndCreate($payload);
-
         return $this->context->tracking->post('/t/r', $dto->toApiPayload());
     }
 

@@ -7,16 +7,16 @@ namespace Tests;
 use TheMarketer\ApiClient\Client;
 
 /**
- * Teste de suprafață pe {@see Client}. Comportamentul HTTP pentru credențiale este acoperit în {@see CredentialsClientTest}.
- *
- * Pentru a testa `checkCredentials`, `getCosts` etc. direct pe `Client` cu Guzzle mock, ar fi nevoie fie de injectare de dependențe în constructorul `Client`,
- * fie de un factory de test — `context` este `private readonly` și nu poate fi înlocuit după construire.
+ * Teste de suprafață pe {@see Client}. Delegarea către {@see CredentialsClient} pentru metodele de credențiale este acoperită în {@see ClientCredentialsFacadeTest}.
  */
 final class ClientTest extends TestCase
 {
     public function testConfigExposesCustomerIdAndRestKey(): void
     {
-        $client = new Client('customer-99', 'rest-secret-1');
+        $client = new Client([
+            'customerId' => 'customer-99',
+            'restKey' => 'rest-secret-1',
+        ]);
 
         $this->assertSame('customer-99', $client->config()->customerId());
         $this->assertSame('rest-secret-1', $client->config()->restKey());

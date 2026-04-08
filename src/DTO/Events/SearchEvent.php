@@ -12,12 +12,6 @@ class SearchEvent extends AbstractPayload
     public function __construct(
         #[Assert\NotBlank]
         #[Assert\Type('string')]
-        public string $k,
-        #[Assert\NotBlank]
-        #[Assert\Type('string')]
-        public string $api_key,
-        #[Assert\NotBlank]
-        #[Assert\Type('string')]
         public string $did,
         #[Assert\NotBlank]
         #[Assert\Type('string')]

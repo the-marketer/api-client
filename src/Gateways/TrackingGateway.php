@@ -17,7 +17,10 @@ final class TrackingGateway extends AbstractGateway
 
     protected function authQuery(): array
     {
-        return [];
+        return [
+            'k' => $this->config->trackingKey(),
+            'api_key' => $this->config->restKey(),
+        ];
     }
 
     protected function baseUrl(): string

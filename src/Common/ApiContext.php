@@ -32,6 +32,6 @@ class ApiContext
 
     public function tracking(): TrackingGateway
     {
-        return $this->trackingGateway ??= new TrackingGateway($this->config, $this->maxRetryAttempts);
+        return $this->gateways['tracking'] ??= new TrackingGateway($this->config, $this->maxRetryAttempts);
     }
 }

@@ -11,9 +11,9 @@ Manage product and merchant reviews.
 $reviewsApi = $client->reviews();
 ```
 
-## `create`
+## `createReview`
 
-Creates a review payload.
+Creates a review payload (customer-facing flow).
 
 **Input**
 
@@ -31,7 +31,7 @@ Creates a review payload.
 - `array`
 
 ```php
-$result = $reviewsApi->create([
+$result = $reviewsApi->createReview([
     'order_id' => '1001',
     'review_date' => '2026-01-01',
     'order_rating' => '5',
@@ -39,9 +39,9 @@ $result = $reviewsApi->create([
 ]);
 ```
 
-## `get`
+## `getProductReviews`
 
-Returns product reviews feed content.
+Returns product reviews feed content (response body as **`string`**, not auto-decoded JSON).
 
 **Input**
 
@@ -55,7 +55,7 @@ Returns product reviews feed content.
 - `string`
 
 ```php
-$result = $reviewsApi->get([
+$result = $reviewsApi->getProductReviews([
     'page' => 1,
     'perPage' => 20,
 ]);
@@ -112,4 +112,3 @@ $result = $reviewsApi->merchantProSetting([
     'order_feed_url' => 'https://shop.example.com/orders.xml',
 ]);
 ```
-

@@ -3,11 +3,17 @@ sidebar_position: 16
 title: Credentials and Utilities
 ---
 
-These methods are exposed directly on `Client` and delegated internally to `CredentialsClient`.
+These methods are exposed directly on `Client` and delegate internally to `CredentialsClient` (`src/Api/CredentialsClient.php`).
+
+## Return types on `Client` vs raw API
+
+- On **`Client`**, `checkCredentials()` and `checkApiCredentials()` return **`bool`**: `true` when the underlying client receives a JSON body that decodes to an **empty array** `[]` (treated as success in this facade), `false` otherwise.
+- Other helpers return **`array`** or **`string`** as documented below.
+- If you need the **decoded JSON `array`** from check endpoints (not a boolean), call the same methods on `CredentialsClient` with a configured `ApiContext` (see package tests for patterns).
 
 ## `checkApiCredentials`
 
-Checks API credentials.
+Verifies REST API credentials.
 
 **Input**
 
@@ -15,15 +21,15 @@ Checks API credentials.
 
 **Response**
 
-- `array`
+- `bool` (on `Client`)
 
 ```php
-$result = $client->checkApiCredentials();
+$ok = $client->checkApiCredentials();
 ```
 
 ## `checkCredentials`
 
-Checks credentials using a tracking key.
+Verifies credentials using a **tracking** key (sent in the JSON body as required by the API).
 
 **Input**
 
@@ -31,10 +37,10 @@ Checks credentials using a tracking key.
 
 **Response**
 
-- `array`
+- `bool` (on `Client`)
 
 ```php
-$result = $client->checkCredentials('TRACKING_KEY');
+$ok = $client->checkCredentials('YOUR_TRACKING_KEY');
 ```
 
 ## `getCosts`
@@ -119,7 +125,7 @@ $result = $client->getRealtimeVisitors();
 
 ## `getReferralLink`
 
-Returns referral link content.
+Returns referral link content (raw response body, not JSON-decoded to `array`).
 
 **Input**
 
@@ -149,3 +155,11 @@ Returns SMS credit information.
 $result = $client->getSmsCredit();
 ```
 
+## `config()`
+
+Returns the immutable `Config` (customer id, rest key, URLs, `baseRestUrl()`, tracking key, etc.).
+
+```php
+$customerId = $client->config()->customerId();
+$restBase = $client->config()->baseRestUrl();
+```

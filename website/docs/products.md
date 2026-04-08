@@ -60,7 +60,7 @@ $result = $productsApi->createProduct([
         'https://shop.example.com/images/sku-123.jpg',
         'https://shop.example.com/images/sku-123-2.jpg',
     ],
-    'created_at' => '2026-01-01 10:00:00',
+    'created_at' => '2026-01-01T10:00:00Z',
 ]);
 ```
 

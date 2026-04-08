@@ -46,7 +46,7 @@ $result = $reportsApi->getAudience([
 
 ## `getEmailAutomation`
 
-Same **`query`** shape as **`getEmailCampaigns`** (see above).
+Same **`query`** shape as **`getEmailCampaigns`** (next section).
 
 **Response**
 
@@ -93,7 +93,7 @@ $result = $reportsApi->getEmailCampaigns([
 
 ## `getFormsEmbedded`
 
-Same **`query`** shape as **`getFormsPopups`** (see above).
+Same **`query`** shape as **`getFormsPopups`** (see **`getFormsPopups`** below).
 
 **Response**
 
@@ -138,7 +138,7 @@ $result = $reportsApi->getFormsPopups([
 
 ## `getPushAutomation`
 
-Same **`query`** shape as **`getPushCampaigns`** (see above).
+Same **`query`** shape as **`getPushCampaigns`** (see **`getPushCampaigns`** below).
 
 **Response**
 
@@ -184,7 +184,7 @@ $result = $reportsApi->getPushCampaigns([
 
 ## `getSmsAutomation`
 
-Same **`query`** shape as **`getSmsCampaigns`** (see above).
+Same **`query`** shape as **`getSmsCampaigns`** (see **`getSmsCampaigns`** below).
 
 **Response**
 
