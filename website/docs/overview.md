@@ -37,6 +37,7 @@ title: Overview
 - [`coupons()`](./coupons.md)
 - [`loyalty()`](./loyalty.md)
 - [`reviews()`](./reviews.md)
+- [`appPush()`](./app-push.md)
 
 Utilities:
 
