@@ -7,7 +7,6 @@ namespace NotificationService\Sdk\Internal;
 use GuzzleHttp\Exception\GuzzleException;
 use JsonException;
 use TheMarketer\ApiClient\Common\AbstractApi;
-use TheMarketer\ApiClient\Common\ApiContext;
 use TheMarketer\ApiClient\DTO\Credentials\CheckCredentials;
 use TheMarketer\ApiClient\DTO\Credentials\DeliveryLogs;
 use TheMarketer\ApiClient\DTO\Credentials\EnteredAutomation;
@@ -16,10 +15,6 @@ use TheMarketer\ApiClient\Exception\ValidationException;
 
 final class CredentialsClient extends AbstractApi
 {
-    public function __construct(ApiContext $context) {
-        parent::__construct($context);
-    }
-
     /**
      * @return array<string, mixed>|list<mixed>
      *
