@@ -7,7 +7,7 @@ namespace TheMarketer\ApiClient\DTO\AppPush;
 use Symfony\Component\Validator\Constraints as Assert;
 use TheMarketer\ApiClient\Common\AbstractPayload;
 
-class SetAppPushToken extends AbstractPayload
+class SetMobilePushToken extends AbstractPayload
 {
     public function __construct(
         #[Assert\NotBlank]

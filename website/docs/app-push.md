@@ -8,7 +8,7 @@ Manage push notification tokens.
 ## Access module
 
 ```php
-$appPushApi = $client->appPush();
+$mobilePushApi = $client->mobilePush();
 ```
 
 ## `removeToken`
@@ -25,7 +25,7 @@ Removes an app push token.
 - `array`
 
 ```php
-$result = $appPushApi->removeToken(
+$result = $mobilePushApi->removeToken(
     'john@doe.com',
     'android'
 );
@@ -46,7 +46,7 @@ Sets an app push token.
 - `array`
 
 ```php
-$result = $appPushApi->setToken(
+$result = $mobilePushApi->setToken(
     'john@doe.com',
     'DEVICE_TOKEN',
     'android'

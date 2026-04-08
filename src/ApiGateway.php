@@ -21,12 +21,16 @@ final class ApiGateway
 
     private readonly GuzzleClient $client;
 
+    /**
+     * @param GuzzleClient|null $client Opțional: client Guzzle (ex. mock în teste). Dacă e null, se creează client cu retry.
+     */
     public function __construct(
         private readonly Config $config,
         int $maxRetryAttempts = 1,
+        ?GuzzleClient $client = null,
     )
     {
-        $this->client = $this->createClient($maxRetryAttempts);
+        $this->client = $client ?? $this->createClient($maxRetryAttempts);
     }
 
     /**
@@ -142,7 +146,8 @@ final class ApiGateway
             $options['json'] = $data;
         }
 
-        $response = $this->client->request($method, $this->config->baseUrl() . $endpoint, $options);
+//        $response = $this->client->request($method, $this->config->baseUrl() . $endpoint, $options);
+        $response = $this->client->request($method, $this->config->apiUrl() . $endpoint, $options);
 
         $this->throwForErrorResponse($response);
 

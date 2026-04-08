@@ -7,17 +7,17 @@ namespace NotificationService\Sdk\Internal;
 use GuzzleHttp\Exception\GuzzleException;
 use JsonException;
 use TheMarketer\ApiClient\Common\AbstractApi;
-use TheMarketer\ApiClient\DTO\AppPush\RemoveAppPushToken;
-use TheMarketer\ApiClient\DTO\AppPush\SetAppPushToken;
+use TheMarketer\ApiClient\DTO\AppPush\RemoveMobilePushToken;
+use TheMarketer\ApiClient\DTO\AppPush\SetMobilePushToken;
 use TheMarketer\ApiClient\Exception\ApiException;
 use TheMarketer\ApiClient\Exception\CustomerNotFoundException;
 use TheMarketer\ApiClient\Exception\MethodNotAllowedException;
 use TheMarketer\ApiClient\Exception\UnauthorizedException;
 use TheMarketer\ApiClient\Exception\ValidationException;
 
-class AppPushApi extends AbstractApi
+class MobilePushApi extends AbstractApi
 {
-    private const APP_PUSH_URL = '/app-push-notifications/token';
+    private const MOBILE_PUSH_URL = '/app-push-notifications/token';
 
     /**
      * @return array<string, mixed>
@@ -32,13 +32,13 @@ class AppPushApi extends AbstractApi
      */
     public function setToken(string $email, string $token, string $type): array
     {
-        $dto = SetAppPushToken::validateAndCreate([
+        $dto = SetMobilePushToken::validateAndCreate([
             'email' => $email,
             'token' => $token,
             'type' => $type,
         ]);
 
-        return $this->context->http->post(self::APP_PUSH_URL . '/set', $dto->toApiPayload());
+        return $this->context->http->post(self::MOBILE_PUSH_URL . '/set', $dto->toApiPayload());
     }
 
     /**
@@ -54,11 +54,11 @@ class AppPushApi extends AbstractApi
      */
     public function removeToken(string $email, string $type): array
     {
-        $dto = RemoveAppPushToken::validateAndCreate([
+        $dto = RemoveMobilePushToken::validateAndCreate([
             'email' => $email,
             'type' => $type,
         ]);
 
-        return $this->context->http->post(self::APP_PUSH_URL . '/remove', $dto->toApiPayload());
+        return $this->context->http->post(self::MOBILE_PUSH_URL . '/remove', $dto->toApiPayload());
     }
 }

@@ -29,13 +29,13 @@ final class ReviewsApiTest extends TestCase
      * @throws GuzzleException
      * @throws \JsonException
      */
-    public function testGetSendsGetToProductReviewsWithAuthQuery(): void
+    public function testGetProductReviewsSendsGetToProductReviewsWithAuthQuery(): void
     {
         [$api, $container] = $this->apiWithMockResponses(
             new Response(200, [], '{"reviews":[]}'),
         );
 
-        $result = $api->get();
+        $result = $api->getProductReviews();
 
         $this->assertSame('{"reviews":[]}', $result);
 
@@ -52,13 +52,13 @@ final class ReviewsApiTest extends TestCase
      * @throws GuzzleException
      * @throws \JsonException
      */
-    public function testGetMergesPaginationAndTypeQueryParams(): void
+    public function testGetProductReviewsMergesPaginationAndTypeQueryParams(): void
     {
         [$api, $container] = $this->apiWithMockResponses(
             new Response(200, [], '{}'),
         );
 
-        $api->get([
+        $api->getProductReviews([
             'page' => 2,
             'perPage' => 20,
             't' => 5,
@@ -75,13 +75,13 @@ final class ReviewsApiTest extends TestCase
      * @throws GuzzleException
      * @throws \JsonException
      */
-    public function testCreateSendsPostJsonBodyToAddReview(): void
+    public function testCreateReviewSendsPostJsonBodyToAddReview(): void
     {
         [$api, $container] = $this->apiWithMockResponses(
             new Response(200, [], '{"ok":true}'),
         );
 
-        $result = $api->create([
+        $result = $api->createReview([
             'order_id' => 'ord-1',
             'review_date' => '2025-03-26',
         ]);
@@ -105,13 +105,13 @@ final class ReviewsApiTest extends TestCase
      * @throws GuzzleException
      * @throws \JsonException
      */
-    public function testCreateSendsNestedProductArrays(): void
+    public function testCreateReviewSendsNestedProductArrays(): void
     {
         [$api, $container] = $this->apiWithMockResponses(
             new Response(200, [], '{}'),
         );
 
-        $api->create([
+        $api->createReview([
             'order_id' => 'o1',
             'review_date' => '2025-01-01',
             'order_rating' => '5',
@@ -181,7 +181,7 @@ final class ReviewsApiTest extends TestCase
         $this->assertArrayNotHasKey('inventory_feed_url', $body);
     }
 
-    public function testGetThrowsWhenDomainKeyMissing(): void
+    public function testGetProductReviewsThrowsWhenDomainKeyMissing(): void
     {
         $client = new Client(['handler' => HandlerStack::create(new MockHandler([new Response(200)]))]);
         $config = new Config('', self::MOCK_API_KEY, self::MOCK_BASE_URL);
@@ -190,10 +190,10 @@ final class ReviewsApiTest extends TestCase
         $this->expectException(ValidationException::class);
         $this->expectExceptionMessage('Customer ID not provided.');
 
-        $api->get();
+        $api->getProductReviews();
     }
 
-    public function testGetThrowsWhenApiKeyMissing(): void
+    public function testGetProductReviewsThrowsWhenApiKeyMissing(): void
     {
         $client = new Client(['handler' => HandlerStack::create(new MockHandler([new Response(200)]))]);
         $config = new Config(self::MOCK_DOMAIN, '', self::MOCK_BASE_URL);
@@ -202,10 +202,10 @@ final class ReviewsApiTest extends TestCase
         $this->expectException(ValidationException::class);
         $this->expectExceptionMessage('Rest key not provided.');
 
-        $api->get();
+        $api->getProductReviews();
     }
 
-    public function testCreateThrowsWhenDomainKeyMissing(): void
+    public function testCreateReviewThrowsWhenDomainKeyMissing(): void
     {
         $client = new Client(['handler' => HandlerStack::create(new MockHandler([new Response(200)]))]);
         $config = new Config('', self::MOCK_API_KEY, self::MOCK_BASE_URL);
@@ -214,16 +214,16 @@ final class ReviewsApiTest extends TestCase
         $this->expectException(ValidationException::class);
         $this->expectExceptionMessage('Customer ID not provided.');
 
-        $api->create(['order_id' => 'x', 'review_date' => '2025-01-01']);
+        $api->createReview(['order_id' => 'x', 'review_date' => '2025-01-01']);
     }
 
-    public function testCreateThrowsWhenOrderIdMissing(): void
+    public function testCreateReviewThrowsWhenOrderIdMissing(): void
     {
         [$api] = $this->apiWithMockResponses();
 
         $this->expectException(\ArgumentCountError::class);
 
-        $api->create(['review_date' => '2025-01-01']);
+        $api->createReview(['review_date' => '2025-01-01']);
     }
 
     public function testMerchantAddReviewThrowsWhenEmailInvalid(): void

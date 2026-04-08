@@ -7,13 +7,19 @@ namespace NotificationService\Sdk\Internal;
 use GuzzleHttp\Exception\GuzzleException;
 use JsonException;
 use TheMarketer\ApiClient\Common\AbstractApi;
-use TheMarketer\ApiClient\DTO\Events\SendCustomEvent;
+use TheMarketer\ApiClient\DTO\Events\CustomEvent;
+use TheMarketer\ApiClient\DTO\Events\ProductLineEvent;
+use TheMarketer\ApiClient\DTO\Events\SearchEvent;
+use TheMarketer\ApiClient\DTO\Events\ServeJavascriptEvent;
+use TheMarketer\ApiClient\DTO\Events\SetEmailEvent;
+use TheMarketer\ApiClient\DTO\Events\InitiateCheckoutEvent;
+use TheMarketer\ApiClient\DTO\Events\ViewHomepageEvent;
+use TheMarketer\ApiClient\DTO\Events\ViewProductEvent;
 use TheMarketer\ApiClient\Exception\ApiException;
 use TheMarketer\ApiClient\Exception\CustomerNotFoundException;
 use TheMarketer\ApiClient\Exception\MethodNotAllowedException;
 use TheMarketer\ApiClient\Exception\UnauthorizedException;
 use TheMarketer\ApiClient\Exception\ValidationException;
-use TheMarketer\ApiClient\ApiGateway;
 
 class EventsApi extends AbstractApi
 {
@@ -29,10 +35,129 @@ class EventsApi extends AbstractApi
      * @throws JsonException
      * @throws GuzzleException
      */
-    public function sendCustomEvent(array $payload): array
-    {
-        $dto = SendCustomEvent::validateAndCreate($payload);
+    // Legacy payload (email + event only):
+    // public function sendCustom(array $payload): array
+    // {
+    //     $dto = \TheMarketer\ApiClient\DTO\Events\SendCustomEvent::validateAndCreate($payload);
+    //     return $this->context->http->post('/custom_events', $dto->toApiPayload());
+    // }
 
-        return $this->context->http->post('/custom_events', $dto->toApiPayload());
+    public function sendCustom(array $payload): array
+    {
+        $dto = CustomEvent::validateAndCreate($payload);
+
+        return $this->context->http->post('/t/r', $dto->toApiPayload());
+    }
+
+    /**
+     * @throws GuzzleException
+     * @throws JsonException
+     */
+    public function viewHomepage(array $payload): array
+    {
+        $dto = ViewHomepageEvent::validateAndCreate($payload);
+
+        return $this->context->http->post('/t/r', $dto->toApiPayload());
+    }
+
+    /**
+     * @throws GuzzleException
+     * @throws JsonException
+     */
+    public function setEmail(array $payload): array
+    {
+        $dto = SetEmailEvent::validateAndCreate($payload);
+
+        return $this->context->http->post('/t/r', $dto->toApiPayload());
+    }
+
+    /**
+     * @throws GuzzleException
+     * @throws JsonException
+     */
+    public function viewProduct(array $payload): array
+    {
+        $dto = ViewProductEvent::validateAndCreate($payload);
+
+        return $this->context->http->post('/t/r', $dto->toApiPayload());
+    }
+
+    /**
+     * @throws GuzzleException
+     * @throws JsonException
+     */
+    public function addToCart(array $payload): array
+    {
+        $dto = ProductLineEvent::validateAndCreate($payload);
+
+        return $this->context->http->post('/t/r', $dto->toApiPayload());
+    }
+
+    /**
+     * @throws GuzzleException
+     * @throws JsonException
+     */
+    public function removeFromCart(array $payload): array
+    {
+        $dto = ProductLineEvent::validateAndCreate($payload);
+
+        return $this->context->http->post('/t/r', $dto->toApiPayload());
+    }
+
+    /**
+     * @throws GuzzleException
+     * @throws JsonException
+     */
+    public function addToWishlist(array $payload): array
+    {
+        $dto = ProductLineEvent::validateAndCreate($payload);
+
+        return $this->context->http->post('/t/r', $dto->toApiPayload());
+    }
+
+    /**
+     * @throws GuzzleException
+     * @throws JsonException
+     */
+    public function removeFromWishlist(array $payload): array
+    {
+        $dto = ProductLineEvent::validateAndCreate($payload);
+
+        return $this->context->http->post('/t/r', $dto->toApiPayload());
+    }
+
+    /**
+     * @throws GuzzleException
+     * @throws JsonException
+     */
+    public function initiateCheckout(array $payload): array
+    {
+        $dto = InitiateCheckoutEvent::validateAndCreate($payload);
+
+        return $this->context->http->post('/t/r', $dto->toApiPayload());
+    }
+
+    /**
+     * @throws GuzzleException
+     * @throws JsonException
+     */
+    public function search(array $payload): array
+    {
+        $payload = [...$payload, 'api_key' => $this->context->http->config()->restKey()];
+        $dto = SearchEvent::validateAndCreate($payload);
+        return $this->context->http->post('/t/r', $dto->toApiPayload());
+    }
+
+    /**
+     * @param  string  $trackingKey  maps to validated `k` (6–20 chars), same as backend `ServeJavascriptFile`
+     *
+     * @throws GuzzleException
+     * @throws JsonException
+     */
+    public function serveJavascript(string $trackingKey): array
+    {
+        $dto = ServeJavascriptEvent::validateAndCreate(['k' => $trackingKey]);
+
+        return $this->context->http->get('/t/j/' . $trackingKey, $dto->toApiPayload());
     }
 }

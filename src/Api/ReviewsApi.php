@@ -16,7 +16,6 @@ use TheMarketer\ApiClient\Exception\CustomerNotFoundException;
 use TheMarketer\ApiClient\Exception\MethodNotAllowedException;
 use TheMarketer\ApiClient\Exception\UnauthorizedException;
 use TheMarketer\ApiClient\Exception\ValidationException;
-use TheMarketer\ApiClient\ApiGateway;
 
 class ReviewsApi extends AbstractApi
 {
@@ -32,7 +31,7 @@ class ReviewsApi extends AbstractApi
      * @throws JsonException
      * @throws GuzzleException
      */
-    public function get(array $query = []): string
+    public function getProductReviews(array $query = []): string
     {
         $dto = ProductReviews::validateAndCreate($query);
 
@@ -52,7 +51,7 @@ class ReviewsApi extends AbstractApi
      * @throws JsonException
      * @throws GuzzleException
      */
-    public function create(array $payload): array
+    public function createReview(array $payload): array
     {
         $dto = AddReview::validateAndCreate($payload);
 

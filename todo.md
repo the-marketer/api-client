@@ -1,8 +1,8 @@
-- de adaugat toate evenimentele
-- metodele de check credentials ar trebui sa returneze un boolean
+<!-- - de adaugat toate evenimentele -->
+<!-- - metodele de check credentials ar trebui sa returneze un boolean -->
 - 100% testare
-- la tranzactionale mai sunt metode de adaugat: vezi si branchul bulk-emails
-- sa fie acoperit si scriptul js generat pentru tracking
-- AppPush sa se numeasca MobilePush
-- unitate pe naming. daca in review avem metode cu create si get atunci sa fie la fel si prin alte module. altfel sa pastram namingul de genul getSubscriber, createResource, etc
+<!-- - la tranzactionale mai sunt metode de adaugat: vezi si branchul bulk-emails -->
+<!-- - sa fie acoperit si scriptul js generat pentru tracking -->
+<!-- - AppPush sa se numeasca MobilePush -->
+<!-- - unitate pe naming. daca in review avem metode cu create si get atunci sa fie la fel si prin alte module. altfel sa pastram namingul de genul getSubscriber, createResource, etc -->
 - verificat stiluri si poze(aici mai discutam despre stiluri si structura)

@@ -32,7 +32,7 @@
 - `loyalty()`
 - `coupons()`
 - `reviews()`
-- `appPush()`
+- `mobilePush()`
 - `events()`
 - `reports()`
 

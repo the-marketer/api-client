@@ -139,7 +139,7 @@ Acces la `customerId`, `restKey`, `baseUrl()` după nevoie.
 | `loyalty()` | Puncte loialitate |
 | `coupons()` | Cupoane disponibile, salvare |
 | `reviews()` | Recenzii produse, merchant, setări Merchant Pro |
-| `appPush()` | Token-uri push |
+| `mobilePush()` | Token-uri push (mobile) |
 | `events()` | Evenimente personalizate |
 | `reports()` | Rapoarte email/SMS/push/forms/audience |
 

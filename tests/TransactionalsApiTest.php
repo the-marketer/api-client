@@ -171,4 +171,54 @@ final class TransactionalsApiTest extends TestCase
 
         $api->sendSms('+40700111222', '');
     }
+
+    /**
+     * @throws GuzzleException
+     * @throws \JsonException
+     */
+    public function testSendEmailsBulkSendsPostJsonArrayOfEmailPayloads(): void
+    {
+        [$api, $container] = $this->apiWithMockResponses(
+            new Response(200, [], '{"queued":2}'),
+        );
+
+        $result = $api->sendEmailsBulk([
+            'emails' => [
+                [
+                    'to' => 'a@example.com',
+                    'subject' => 'One',
+                    'body' => '<p>A</p>',
+                ],
+                [
+                    'to' => 'b@example.com',
+                    'subject' => 'Two',
+                    'body' => 'Plain',
+                    'from' => 'shop@example.com',
+                ],
+            ],
+        ]);
+
+        $this->assertSame(['queued' => 2], $result);
+
+        $request = $this->lastRequest($container);
+        $this->assertSame('POST', $request->getMethod());
+        $this->assertStringEndsWith('/transactional/batch-send-email', $request->getUri()->getPath());
+
+        $body = json_decode((string) $request->getBody(), true, 512, JSON_THROW_ON_ERROR);
+        $this->assertArrayHasKey('emails', $body);
+        $this->assertCount(2, $body['emails']);
+        $this->assertSame('a@example.com', $body['emails'][0]['to']);
+        $this->assertSame('One', $body['emails'][0]['subject']);
+        $this->assertSame('b@example.com', $body['emails'][1]['to']);
+        $this->assertSame('shop@example.com', $body['emails'][1]['from']);
+    }
+
+    public function testSendEmailsBulkThrowsWhenEmailsEmpty(): void
+    {
+        [$api] = $this->apiWithMockResponses();
+
+        $this->expectException(ValidationException::class);
+
+        $api->sendEmailsBulk(['emails' => []]);
+    }
 }

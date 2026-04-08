@@ -9,20 +9,20 @@ use GuzzleHttp\Exception\GuzzleException;
 use GuzzleHttp\Handler\MockHandler;
 use GuzzleHttp\HandlerStack;
 use GuzzleHttp\Psr7\Response;
-use NotificationService\Sdk\Internal\AppPushApi;
+use NotificationService\Sdk\Internal\MobilePushApi;
 use TheMarketer\ApiClient\ApiGateway;
 use TheMarketer\ApiClient\Common\ApiContext;
 use TheMarketer\ApiClient\Common\Config;
 use TheMarketer\ApiClient\Exception\ValidationException;
 
-final class AppPushApiTest extends TestCase
+final class MobilePushApiTest extends TestCase
 {
     /**
-     * @return array{0: AppPushApi, 1: \stdClass}
+     * @return array{0: MobilePushApi, 1: \stdClass}
      */
     private function apiWithMockResponses(Response ...$responses): array
     {
-        return $this->createApiWithMock(AppPushApi::class, ...$responses);
+        return $this->createApiWithMock(MobilePushApi::class, ...$responses);
     }
 
     /**
@@ -101,7 +101,7 @@ final class AppPushApiTest extends TestCase
     {
         $client = new Client(['handler' => HandlerStack::create(new MockHandler([new Response(200)]))]);
         $config = new Config('', self::MOCK_API_KEY, self::MOCK_BASE_URL);
-        $api = new AppPushApi(new ApiContext(new ApiGateway($config, 0, $client), $config));
+        $api = new MobilePushApi(new ApiContext(new ApiGateway($config, 0, $client), $config));
 
         $this->expectException(ValidationException::class);
         $this->expectExceptionMessage('Customer ID not provided.');
@@ -113,7 +113,7 @@ final class AppPushApiTest extends TestCase
     {
         $client = new Client(['handler' => HandlerStack::create(new MockHandler([new Response(200)]))]);
         $config = new Config(self::MOCK_DOMAIN, '', self::MOCK_BASE_URL);
-        $api = new AppPushApi(new ApiContext(new ApiGateway($config, 0, $client), $config));
+        $api = new MobilePushApi(new ApiContext(new ApiGateway($config, 0, $client), $config));
 
         $this->expectException(ValidationException::class);
         $this->expectExceptionMessage('Rest key not provided.');
@@ -134,7 +134,7 @@ final class AppPushApiTest extends TestCase
     {
         $client = new Client(['handler' => HandlerStack::create(new MockHandler([new Response(200)]))]);
         $config = new Config('', self::MOCK_API_KEY, self::MOCK_BASE_URL);
-        $api = new AppPushApi(new ApiContext(new ApiGateway($config, 0, $client), $config));
+        $api = new MobilePushApi(new ApiContext(new ApiGateway($config, 0, $client), $config));
 
         $this->expectException(ValidationException::class);
         $this->expectExceptionMessage('Customer ID not provided.');
@@ -146,7 +146,7 @@ final class AppPushApiTest extends TestCase
     {
         $client = new Client(['handler' => HandlerStack::create(new MockHandler([new Response(200)]))]);
         $config = new Config(self::MOCK_DOMAIN, '', self::MOCK_BASE_URL);
-        $api = new AppPushApi(new ApiContext(new ApiGateway($config, 0, $client), $config));
+        $api = new MobilePushApi(new ApiContext(new ApiGateway($config, 0, $client), $config));
 
         $this->expectException(ValidationException::class);
         $this->expectExceptionMessage('Rest key not provided.');

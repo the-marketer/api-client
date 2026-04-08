@@ -6,7 +6,7 @@ namespace TheMarketer\ApiClient;
 
 use GuzzleHttp\Exception\GuzzleException;
 use JsonException;
-use NotificationService\Sdk\Internal\AppPushApi;
+use NotificationService\Sdk\Internal\MobilePushApi;
 use NotificationService\Sdk\Internal\CampaignsApi;
 use NotificationService\Sdk\Internal\CouponsApi;
 use NotificationService\Sdk\Internal\CredentialsClient;
@@ -40,7 +40,7 @@ class Client
 
     private ReviewsApi $reviews;
 
-    private AppPushApi $appPush;
+    private MobilePushApi $mobilePush;
 
     private EventsApi $events;
 
@@ -80,7 +80,7 @@ class Client
 
         $this->reviews = new ReviewsApi($this->context);
 
-        $this->appPush = new AppPushApi($this->context);
+        $this->mobilePush = new MobilePushApi($this->context);
 
         $this->events = new EventsApi($this->context);
 
@@ -131,9 +131,9 @@ class Client
         return $this->reviews;
     }
 
-    public function appPush(): AppPushApi
+    public function mobilePush(): MobilePushApi
     {
-        return $this->appPush;
+        return $this->mobilePush;
     }
 
     public function events(): EventsApi
@@ -155,18 +155,18 @@ class Client
      * @throws \Illuminate\Validation\ValidationException
      * @throws ValidationException|GuzzleException|JsonException
      */
-    public function checkCredentials(string $trackingKey): array
+    public function checkCredentials(string $trackingKey): bool
     {
-        return $this->credentials->checkCredentials($trackingKey);
+        return $this->credentials->checkCredentials($trackingKey) === [];
     }
 
     /**
      * @throws GuzzleException
      * @throws JsonException
      */
-    public function checkApiCredentials(): array
+    public function checkApiCredentials(): bool
     {
-        return $this->credentials->checkApiCredentials();
+        return $this->credentials->checkApiCredentials() === [];
     }
 
     /**

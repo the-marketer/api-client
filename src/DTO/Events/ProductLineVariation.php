@@ -2,20 +2,20 @@
 
 declare(strict_types=1);
 
-namespace TheMarketer\ApiClient\DTO\AppPush;
+namespace TheMarketer\ApiClient\DTO\Events;
 
 use Symfony\Component\Validator\Constraints as Assert;
 use TheMarketer\ApiClient\Common\AbstractPayload;
 
-class RemoveAppPushToken extends AbstractPayload
+class ProductLineVariation extends AbstractPayload
 {
     public function __construct(
         #[Assert\NotBlank]
-        #[Assert\Email]
-        public string $email,
+        #[Assert\Type('string')]
+        public string $id,
         #[Assert\NotBlank]
-        #[Assert\Choice(choices: ['ios', 'android'])]
-        public string $type,
+        #[Assert\Type('string')]
+        public string $sku,
     ) {
     }
 }

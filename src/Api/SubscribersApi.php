@@ -128,7 +128,7 @@ class SubscribersApi extends AbstractApi
      * @throws JsonException
      * @throws GuzzleException
      */
-    public function addSubscriber(array $payload): array
+    public function addSubscriberAsync(array $payload): array
     {
         $dto = SubscriberValidator::validateAndCreate($payload);
 
@@ -188,7 +188,7 @@ class SubscribersApi extends AbstractApi
      * @throws JsonException
      * @throws GuzzleException
      */
-    public function addSubscriberSync(array $payload): array
+    public function addSubscriber(array $payload): array
     {
         $dto = SubscriberValidator::validateAndCreate($payload);
 

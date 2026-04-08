@@ -52,4 +52,9 @@ class Config
     {
         return $this->restKey;
     }
+
+    public function eventsBaseUrl(): string
+    {
+        return rtrim($this->apiUrl, '/') . '/t';
+    }
 }
