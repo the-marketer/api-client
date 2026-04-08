@@ -14,7 +14,6 @@ $clientTest = new Client(
 $clientReferee2 = new Client(
     '69cd09e87e1f7708da06ba09',
     'UIWVQYFX',
-    ''
 );
 
 $clientNamos = new Client(
