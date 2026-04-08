@@ -7,10 +7,10 @@ title: Overview
 
 ## What this package does
 
-- Sends HTTP requests to The Marketer endpoints.
-- Validates payloads locally with DTOs.
-- Returns decoded JSON for most methods.
-- Maps HTTP failures to explicit exceptions.
+- Consumes The Marketer API from PHP applications through a clean, module-based client.
+- Helps you integrate faster by keeping request payloads consistent and validated before sending.
+- Provides a predictable integration flow: authenticate, call a module, send data, receive a response.
+- Surfaces API failures in a clear way, so you can handle errors reliably in your code.
 
 ## Requirements
 
@@ -27,14 +27,18 @@ title: Overview
 
 ## Available API modules
 
-- `subscribers()`
-- `orders()`
-- `transactionals()`
-- `products()`
-- `campaigns()`
-- `loyalty()`
-- `coupons()`
-- `reviews()`
-- `appPush()`
-- `events()`
-- `reports()`
+- [`orders()`](./orders.md)
+- [`subscribers()`](./subscribers.md)
+- [`campaigns()`](./campaigns.md)
+- [`products()`](./products.md)
+- [`transactionals()`](./transactionals.md)
+- [`reports()`](./reports.md)
+- [`events()`](./events.md)
+- [`coupons()`](./coupons.md)
+- [`loyalty()`](./loyalty.md)
+- [`reviews()`](./reviews.md)
+
+Utilities:
+
+- [`Client` utilities](./credentials-utilities.md)
+- [Errors & troubleshooting](./errors.md)

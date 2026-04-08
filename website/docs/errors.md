@@ -14,6 +14,71 @@ title: Errors and Troubleshooting
 
 Local payload/config validation failures are raised as `ValidationException`.
 
+## Most common exceptions
+
+## `ValidationException`
+
+Appears when payload input is invalid before request execution.
+
+Typical causes:
+
+- missing required fields in payload
+- invalid email format
+- invalid enum/choice values
+- invalid date format
+
+## `UnauthorizedException`
+
+Appears when credentials are invalid (`401`).
+
+Typical causes:
+
+- wrong `customerId` or `restKey`
+- expired/revoked credentials
+
+## `CustomerNotFoundException`
+
+Appears when customer is not found (`404`).
+
+Typical causes:
+
+- invalid customer/account context
+
+## `MethodNotAllowedException`
+
+Appears when endpoint does not allow that HTTP method (`405`).
+
+Typical causes:
+
+- endpoint/method mismatch
+
+## `ApiException`
+
+Generic API exception for non-mapped errors.
+
+Typical causes:
+
+- business validation errors returned by API
+- temporary upstream API issues
+
+## `JsonException`
+
+Raised when response decoding fails.
+
+Typical causes:
+
+- invalid JSON response body
+
+## `GuzzleHttp\\Exception\\GuzzleException`
+
+Transport-level failure (network/request layer).
+
+Typical causes:
+
+- timeouts
+- connection failures
+- DNS/TLS issues
+
 ## Fast troubleshooting checklist
 
 - Run `checkApiCredentials()` before business calls.

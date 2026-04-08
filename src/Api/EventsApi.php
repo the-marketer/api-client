@@ -17,7 +17,6 @@ use TheMarketer\ApiClient\ApiGateway;
 
 class EventsApi extends AbstractApi
 {
-
     /**
      * @param  array<string, mixed>  $payload
      * @return array<string, mixed>

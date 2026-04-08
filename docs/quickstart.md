@@ -15,8 +15,7 @@ use TheMarketer\ApiClient\Client;
 
 $client = new Client(
     customerId: 'YOUR_CUSTOMER_ID',
-    restKey: 'YOUR_REST_KEY',
-    maxRetryAttempts: 1, // optional
+    restKey: 'YOUR_REST_KEY'
 );
 ```
 

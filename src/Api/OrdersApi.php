@@ -30,22 +30,6 @@ class OrdersApi extends AbstractApi
     }
 
     /**
-     * Alias pentru {@see saveOrder()}.
-     *
-     * @param array<string, mixed> $payload
-     *
-     * @return array<string, mixed>
-     *
-     * @throws ValidationException
-     * @throws JsonException
-     * @throws GuzzleException
-     */
-    public function save(array $payload): array
-    {
-        return $this->saveOrder($payload);
-    }
-
-    /**
      * @param  array<string, mixed>  $payload
      *
      * @return array<string, mixed>

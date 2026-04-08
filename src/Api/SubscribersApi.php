@@ -120,19 +120,6 @@ class SubscribersApi extends AbstractApi
     }
 
     /**
-     * Alias for {@see addSubscriber()}.
-     *
-     * @param array $payload
-     * @return array
-     * @throws GuzzleException
-     * @throws JsonException
-     */
-    public function add(array $payload): array
-    {
-        return $this->addSubscriber($payload);
-    }
-
-    /**
      * @throws UnauthorizedException
      * @throws CustomerNotFoundException
      * @throws MethodNotAllowedException
