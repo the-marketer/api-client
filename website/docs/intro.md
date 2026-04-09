@@ -34,14 +34,14 @@ if (!$ok) {
 - [Overview](./overview.md)
 - [Quickstart](./quickstart.md)
 - [Authentication](./authentication.md)
-- [Laravel](./laravel.md)
 - [Errors and Troubleshooting](./errors.md)
+- [Framework Integrations (Laravel)](./laravel.md)
 
 ## Reading Order
 
 1. Overview
 2. Quickstart
 3. Authentication
-4. Framework Integrations (Laravel)
-5. API Reference (Orders, Events, and more)
-6. Errors and Troubleshooting
+4. API Reference (Orders, Events, and more)
+5. Errors and Troubleshooting
+6. Framework Integrations (Laravel)

@@ -20,11 +20,6 @@ const sidebars = {
     'authentication',
     {
       type: 'category',
-      label: 'Framework Integrations',
-      items: ['laravel'],
-    },
-    {
-      type: 'category',
       label: 'API Reference',
       items: [
         'orders',
@@ -42,6 +37,11 @@ const sidebars = {
     },
     'credentials-utilities',
     'errors',
+    {
+      type: 'category',
+      label: 'Framework Integrations',
+      items: ['laravel'],
+    },
   ],
 };
 
