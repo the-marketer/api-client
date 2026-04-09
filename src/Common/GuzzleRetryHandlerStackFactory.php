@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace TheMarketer\ApiClient;
+namespace TheMarketer\ApiClient\Common;
 
 use GuzzleHttp\Exception\ConnectException;
 use GuzzleHttp\Exception\RequestException;
@@ -19,15 +19,16 @@ use Psr\Http\Message\ResponseInterface;
 final class GuzzleRetryHandlerStackFactory
 {
     /**
-     * @param  (callable(\Psr\Http\Message\RequestInterface, array): \GuzzleHttp\Promise\PromiseInterface)|null  $handler  Underlying handler (e.g. curl or {@see \GuzzleHttp\Handler\MockHandler}).
-     * @param  int  $maxRetryAttempts  Extra attempts after the first request (e.g. 1 = one retry, two HTTP tries max).
-     * @param  (callable(int, ?\Psr\Http\Message\ResponseInterface, \Psr\Http\Message\RequestInterface): int)|null  $delay  Milliseconds to wait before each retry; default is capped exponential backoff.
+     * @param (callable(\Psr\Http\Message\RequestInterface, array): \GuzzleHttp\Promise\PromiseInterface)|null $handler Underlying handler (e.g. curl or {@see \GuzzleHttp\Handler\MockHandler}).
+     * @param int $maxRetryAttempts Extra attempts after the first request (e.g. 1 = one retry, two HTTP tries max).
+     * @param (callable(int, ?\Psr\Http\Message\ResponseInterface, \Psr\Http\Message\RequestInterface): int)|null $delay Milliseconds to wait before each retry; default is capped exponential backoff.
      */
     public static function create(
         ?callable $handler = null,
         int $maxRetryAttempts = 1,
         ?callable $delay = null,
-    ): HandlerStack {
+    ): HandlerStack
+    {
         $stack = HandlerStack::create($handler ?? Utils::chooseHandler());
         $delayFn = $delay ?? static function (int $retries, ?ResponseInterface $response, RequestInterface $request): int {
             return self::defaultDelay($retries, $response, $request);
@@ -44,16 +45,17 @@ final class GuzzleRetryHandlerStackFactory
     }
 
     /**
-     * @param  int  $maxRetryAttempts  Same as {@see create()}.
+     * @param int $maxRetryAttempts Same as {@see create()}.
      */
     public static function createWithZeroDelayForTesting(
         ?callable $handler = null,
         int $maxRetryAttempts = 1,
-    ): HandlerStack {
+    ): HandlerStack
+    {
         return self::create(
             $handler,
             $maxRetryAttempts,
-            static fn (int $retries, ?ResponseInterface $response, RequestInterface $request): int => 0,
+            static fn(int $retries, ?ResponseInterface $response, RequestInterface $request): int => 0,
         );
     }
 
@@ -77,7 +79,7 @@ final class GuzzleRetryHandlerStackFactory
             }
 
             if ($exception instanceof RequestException) {
-                if (! $exception->hasResponse()) {
+                if (!$exception->hasResponse()) {
                     return true;
                 }
 
@@ -106,7 +108,7 @@ final class GuzzleRetryHandlerStackFactory
     private static function defaultDelay(int $retries, ?ResponseInterface $response, RequestInterface $request): int
     {
         // Milliseconds; first retry ~250ms, then doubles, cap 10s (Guzzle handlers use `delay` as ms).
-        $ms = (int) min(250 * (2 ** max(0, $retries - 1)), 10_000);
+        $ms = (int)min(250 * (2 ** max(0, $retries - 1)), 10_000);
 
         return max(0, $ms);
     }

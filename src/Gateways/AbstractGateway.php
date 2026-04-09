@@ -9,12 +9,12 @@ use GuzzleHttp\Exception\GuzzleException;
 use JsonException;
 use Psr\Http\Message\ResponseInterface;
 use TheMarketer\ApiClient\Common\Config;
+use TheMarketer\ApiClient\Common\GuzzleRetryHandlerStackFactory;
 use TheMarketer\ApiClient\Exception\ApiException;
 use TheMarketer\ApiClient\Exception\CustomerNotFoundException;
 use TheMarketer\ApiClient\Exception\MethodNotAllowedException;
 use TheMarketer\ApiClient\Exception\UnauthorizedException;
 use TheMarketer\ApiClient\Exception\ValidationException;
-use TheMarketer\ApiClient\GuzzleRetryHandlerStackFactory;
 
 abstract class AbstractGateway
 {

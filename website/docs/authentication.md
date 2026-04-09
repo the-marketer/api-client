@@ -28,8 +28,8 @@ use TheMarketer\ApiClient\Client;
 $client = new Client([
     'customerId' => 'YOUR_CUSTOMER_ID',
     'restKey' => 'YOUR_REST_KEY',
-    // Optional:
     'trackingKey' => 'YOUR_TRACKING_KEY',
+    // Optional:
     'restUrl' => 'https://t.themarketer.com',
     'trackingUrl' => 'https://t.themarketer.com',
     'maxRetryAttempts' => 1,

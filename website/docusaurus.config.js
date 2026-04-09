@@ -53,7 +53,7 @@ const config = {
   themeConfig:
     /** @type {import('@docusaurus/preset-classic').ThemeConfig} */
     ({
-      image: 'img/docusaurus-social-card.jpg',
+      image: 'img/logo-partial.svg',
       navbar: {
         title: 'API Client Docs',
         logo: {
@@ -76,27 +76,8 @@ const config = {
       },
       footer: {
         style: 'dark',
-        links: [
-          {
-            title: 'Docs',
-            items: [
-              {
-                label: 'Quickstart',
-                to: '/docs/intro',
-              },
-            ],
-          },
-          {
-            title: 'More',
-            items: [
-              {
-                label: 'GitHub',
-                href: 'https://github.com/the-marketer/api-client',
-              },
-            ],
-          },
-        ],
-        copyright: `Copyright © ${new Date().getFullYear()} The Marketer.`,
+        links: [],
+        copyright: `© ${new Date().getFullYear()} The Marketer API Client.`,
       },
       prism: {
         theme: lightCodeTheme,

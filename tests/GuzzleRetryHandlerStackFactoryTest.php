@@ -8,7 +8,7 @@ use GuzzleHttp\Client as GuzzleClient;
 use GuzzleHttp\Exception\RequestException;
 use GuzzleHttp\Handler\MockHandler;
 use GuzzleHttp\Psr7\Response;
-use TheMarketer\ApiClient\GuzzleRetryHandlerStackFactory;
+use TheMarketer\ApiClient\Common\GuzzleRetryHandlerStackFactory;
 
 final class GuzzleRetryHandlerStackFactoryTest extends TestCase
 {

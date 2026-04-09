@@ -3,15 +3,17 @@ sidebar_position: 11
 title: Events
 ---
 
-Send standard and custom behavioral events. There are two integration styles:
-
-1. **REST — `sendCustomApi`**  
-   POST către **`/custom_events`** pe host-ul REST. Autentificare query: **`k`** = rest key, **`u`** = customer id (`ApiGateway`). Payload minim: `email`, `event`.
-
-2. **Tracking — toate celelalte metode**  
-   Folosesc **`TrackingGateway`**: POST către **`/t/r`** (sau **GET** pentru `serveJavascript`). Necesită **`trackingKey`** setat în configurația `Client` (vezi [Authentication](./authentication.md)). Query: **`k`** = tracking key, **`api_key`** = rest key.
+Send standard and custom behavioral events.
 
 ```php
+use TheMarketer\ApiClient\Client;
+
+$client = new Client([
+    'customerId' => 'YOUR_CUSTOMER_ID',
+    'restKey' => 'YOUR_REST_KEY',
+    'trackingKey' => 'YOUR_TRACKING_KEY', // required for tracking-based event methods
+]);
+
 $eventsApi = $client->events();
 ```
 
@@ -19,11 +21,7 @@ $eventsApi = $client->events();
 
 ## `sendCustomApi`
 
-Eveniment personalizat prin API-ul REST (fără câmpurile complete de tracking din `CustomEvent`).
-
-**Transport**
-
-- **POST** `{baseRestUrl}custom_events` (cu query `k`, `u`).
+Custom event sent through the REST API (without the full tracking fields from `CustomEvent`).
 
 **Input — `payload`**
 
@@ -45,15 +43,11 @@ $result = $eventsApi->sendCustomApi([
 
 ## `sendCustom`
 
-Eveniment personalizat pe **tracking** (`CustomEvent`).
-
-**Transport**
-
-- **POST** tracking **`/t/r`**
+Custom event sent through **tracking** (`CustomEvent`).
 
 **Input — `payload`**
 
-- `did` (`string`, required) — device / session id
+- `did` (`string`, required) — device/session id
 - `email` (`string`, required, email valid)
 - `event` (`string`, required)
 - `url` (`string`, required, URL valid)
@@ -80,16 +74,12 @@ $result = $eventsApi->sendCustom([
 
 ## `viewHomepage`
 
-Vizualizare homepage / pagină generică (`ViewHomepageEvent`).
-
-**Transport**
-
-- **POST** tracking **`/t/r`**
+Homepage or generic page view (`ViewHomepageEvent`).
 
 **Input — `payload`**
 
 - `did` (`string`, required)
-- `event` (`string`, required) — ex. nume eveniment agreat cu backend
+- `event` (`string`, required) — for example, an event name agreed with the backend
 - `url` (`string`, required, URL valid)
 - `http_user_agent` (`string`, required)
 - `remote_addr` (`string`, required)
@@ -113,11 +103,7 @@ $result = $eventsApi->viewHomepage([
 
 ## `setEmail`
 
-Asociere / setare email în fluxul de tracking (`SetEmailEvent`).
-
-**Transport**
-
-- **POST** tracking **`/t/r`**
+Associate/set an email in the tracking flow (`SetEmailEvent`).
 
 **Input — `payload`**
 
@@ -140,11 +126,7 @@ Asociere / setare email în fluxul de tracking (`SetEmailEvent`).
 
 ## `viewProduct`
 
-Vizualizare produs (`ViewProductEvent`).
-
-**Transport**
-
-- **POST** tracking **`/t/r`**
+Product view (`ViewProductEvent`).
 
 **Input — `payload`**
 
@@ -173,20 +155,16 @@ $result = $eventsApi->viewProduct([
 
 ---
 
-## `addToCart`, `removeFromCart`, `addToWishlist`, `removeFromWishlist`
+## `addToCart`
 
-Operații coș / wishlist; toate folosesc același DTO **`ProductLineEvent`**. Diferența este valoarea câmpului **`event`** (și semantica în backend).
-
-**Transport**
-
-- **POST** tracking **`/t/r`**
+Adds a product line to cart.
 
 **Input — `payload`**
 
 - `did` (`string`, required)
-- `event` (`string`, required) — ex. `add_to_cart`, `remove_from_cart`, …
-- `product_id` (`int`, required, pozitiv) — poate fi trimis ca string numeric; este normalizat
-- `quantity` (`int`, required, pozitiv)
+- `event` (`string`, required) — e.g. `add_to_cart`, `remove_from_cart`, ...
+- `product_id` (`int`, required, positive) — can be sent as a numeric string; it is normalized
+- `quantity` (`int`, required, positive)
 - `variation` (`array`, required):
   - `id` (`string`, required)
   - `sku` (`string`, required)
@@ -212,22 +190,62 @@ $line = [
 ];
 
 $eventsApi->addToCart($line);
-$eventsApi->removeFromCart([...]); // același shape, alt `event`
+```
+
+---
+
+## `removeFromCart`
+
+Removes a product line from cart.
+
+Uses the same payload schema as `addToCart` (`ProductLineEvent`), with a different `event` value.
+
+```php
+$eventsApi->removeFromCart([
+    ...$line,
+    'event' => 'remove_from_cart',
+]);
+```
+
+---
+
+## `addToWishlist`
+
+Adds a product line to wishlist.
+
+Uses the same payload schema as `addToCart` (`ProductLineEvent`), with a different `event` value.
+
+```php
+$eventsApi->addToWishlist([
+    ...$line,
+    'event' => 'add_to_wishlist',
+]);
+```
+
+---
+
+## `removeFromWishlist`
+
+Removes a product line from wishlist.
+
+Uses the same payload schema as `addToCart` (`ProductLineEvent`), with a different `event` value.
+
+```php
+$eventsApi->removeFromWishlist([
+    ...$line,
+    'event' => 'remove_from_wishlist',
+]);
 ```
 
 ---
 
 ## `initiateCheckout`
 
-Start checkout; folosește **`InitiateCheckoutEvent`**, același set de câmpuri ca **`ViewHomepageEvent`**.
-
-**Transport**
-
-- **POST** tracking **`/t/r`**
+Start checkout; uses **`InitiateCheckoutEvent`**, with the same field set as **`ViewHomepageEvent`**.
 
 **Input — `payload`**
 
-- `did`, `event`, `url`, `http_user_agent`, `remote_addr` (required, ca la `viewHomepage`)
+- `did`, `event`, `url`, `http_user_agent`, `remote_addr` (required, same as `viewHomepage`)
 - `source` (`?string`, optional)
 
 **Response**
@@ -248,11 +266,7 @@ $result = $eventsApi->initiateCheckout([
 
 ## `search`
 
-Căutare site (`SearchEvent`).
-
-**Transport**
-
-- **POST** tracking **`/t/r`**
+Site search (`SearchEvent`).
 
 **Input — `payload`**
 
@@ -283,29 +297,17 @@ $result = $eventsApi->search([
 
 ## `serveJavascript`
 
-Încarcă resursa JavaScript de tracking pentru o cheie dată.
-
-**Transport**
-
-- **GET** tracking **`/t/j/{trackingKey}`**  
-  Parametrul metodei este același șir folosit în path; în plus, DTO-ul validează lungimea cheii (**6–20** caractere) ca `k`.
+Load the tracking JavaScript resource for a given key.
 
 **Input**
 
-- `trackingKey` (`string`, required) — 6–20 caractere
+- `trackingKey` (`string`, required) — 6–20 characters
 
 **Response**
 
-- `array` (JSON decodat de gateway)
+- `array` (JSON decoded by the gateway)
 
 ```php
 $result = $eventsApi->serveJavascript('abcdef123456');
 ```
 
----
-
-## Validare și erori
-
-- Payload-urile incomplete sau invalide → `ValidationException` înainte de rețea.
-- Lipsă **`trackingKey`** în config la apeluri tracking → `ValidationException` (vezi [Errors](./errors.md)).
-- Surse: `src/Api/EventsApi.php`, `src/DTO/Events/`, `tests/EventsApiTest.php`.

@@ -26,6 +26,16 @@
       "Tests\\": "tests/"
     }
   },
+  "extra": {
+    "laravel": {
+      "aliases": {
+        "TheMarketer": "TheMarketer\\ApiClient\\Laravel\\Facades\\TheMarketer"
+      },
+      "providers": [
+        "TheMarketer\\ApiClient\\Laravel\\ApiClientServiceProvider"
+      ]
+    }
+  },
   "scripts": {
     "test": "phpunit"
   },
