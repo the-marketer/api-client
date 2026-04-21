@@ -10,7 +10,16 @@ composer require themarketer/api-client
 
 ## 2) Initialize client
 
-`Client` primește un **array** de configurare (nu parametri separați la constructor).
+`Client` primește un **array asociativ** (vezi `TheMarketer\ApiClient\Client::__construct`). În practică, pentru REST sunt necesare `customerId` și `restKey`; restul sunt opționale și se îmbină cu valorile implicite de mai jos.
+
+| Cheie | Tip | Implicit | Rol |
+| --- | --- | --- | --- |
+| `customerId` | `string` | `''` | Identificator cont; trimis ca `u` în cererile REST. **Obligatoriu** în utilizare reală. |
+| `restKey` | `string` | `''` | Secret REST; trimis ca `k`. **Obligatoriu** în utilizare reală. |
+| `trackingKey` | `string` | `''` | Cheie tracking; necesară pentru apeluri bazate pe tracking (ex. unele metode `events()`). |
+| `restUrl` | `string` | `https://t.themarketer.com` | URL de bază REST (`ApiGateway`). |
+| `trackingUrl` | `string` | `https://t.themarketer.com` | URL de bază tracking (`TrackingGateway`). |
+| `maxRetryAttempts` | `int` | `1` | Reîncercări la nivel HTTP în gateway-uri. |
 
 ```php
 use TheMarketer\ApiClient\Client;
@@ -18,9 +27,14 @@ use TheMarketer\ApiClient\Client;
 $client = new Client([
     'customerId' => 'YOUR_CUSTOMER_ID',
     'restKey' => 'YOUR_REST_KEY',
+    'trackingKey' => 'YOUR_TRACKING_KEY',
+    'restUrl' => 'https://t.themarketer.com',
+    'trackingUrl' => 'https://t.themarketer.com',
     'maxRetryAttempts' => 1,
 ]);
 ```
+
+Poți omite cheile opționale pentru a folosi implicitele. Detalii despre credențiale și tracking: [Authentication](./authentication.md).
 
 ## 3) Check API credentials
 

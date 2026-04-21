@@ -20,7 +20,16 @@ Endpoints that use the **tracking** base URL also need a **tracking key** in con
 
 ## Initialize the client
 
-`Client` accepts a **single associative array** (not separate constructor parameters):
+`Client` accepts a **single associative array** (not separate constructor parameters). Supported keys match the package constructor:
+
+| Key | Type | Default | Notes |
+| --- | --- | --- | --- |
+| `customerId` | `string` | `''` | **Required** in practice for REST (`u` query param). |
+| `restKey` | `string` | `''` | **Required** in practice for REST (`k` query param). |
+| `trackingKey` | `string` | `''` | Used by the tracking gateway where a tracking key is required. |
+| `restUrl` | `string` | `https://t.themarketer.com` | REST base URL. |
+| `trackingUrl` | `string` | `https://t.themarketer.com` | Tracking base URL. |
+| `maxRetryAttempts` | `int` | `1` | HTTP retries in gateways. |
 
 ```php
 use TheMarketer\ApiClient\Client;
@@ -29,12 +38,13 @@ $client = new Client([
     'customerId' => 'YOUR_CUSTOMER_ID',
     'restKey' => 'YOUR_REST_KEY',
     'trackingKey' => 'YOUR_TRACKING_KEY',
-    // Optional:
     'restUrl' => 'https://t.themarketer.com',
     'trackingUrl' => 'https://t.themarketer.com',
     'maxRetryAttempts' => 1,
 ]);
 ```
+
+A step-by-step setup with the same options is in [Quickstart](./quickstart.md).
 
 ## Validate credentials early
 

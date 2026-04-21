@@ -11,7 +11,16 @@ composer require themarketer/api-client
 
 ## 2) Initialize client
 
-Pass an **array** of options. Required keys: `customerId`, `restKey`.
+`Client` accepts a **single associative array** (see `TheMarketer\ApiClient\Client::__construct`). Only `customerId` and `restKey` are required for REST calls; the rest are optional and merge with the defaults below.
+
+| Key | Type | Default | Purpose |
+| --- | --- | --- | --- |
+| `customerId` | `string` | `''` | Account identifier; sent as `u` on REST requests. **Required** for real usage. |
+| `restKey` | `string` | `''` | REST API secret; sent as `k` on REST requests. **Required** for real usage. |
+| `trackingKey` | `string` | `''` | Tracking / behavioral API key; needed for tracking-based calls (e.g. some `events()` flows). |
+| `restUrl` | `string` | `https://t.themarketer.com` | Base URL for REST (`ApiGateway`). |
+| `trackingUrl` | `string` | `https://t.themarketer.com` | Base URL for tracking (`TrackingGateway`). |
+| `maxRetryAttempts` | `int` | `1` | Retries per gateway HTTP layer when requests fail transiently. |
 
 ```php
 use TheMarketer\ApiClient\Client;
@@ -19,9 +28,14 @@ use TheMarketer\ApiClient\Client;
 $client = new Client([
     'customerId' => 'YOUR_CUSTOMER_ID',
     'restKey' => 'YOUR_REST_KEY',
-    'maxRetryAttempts' => 1, // optional; default 1
+    'trackingKey' => 'YOUR_TRACKING_KEY',
+    'restUrl' => 'https://t.themarketer.com',
+    'trackingUrl' => 'https://t.themarketer.com',
+    'maxRetryAttempts' => 1,
 ]);
 ```
+
+Omit optional keys to use the defaults above. For credential signing details, see [Authentication](./authentication.md).
 
 ## 3) Check API credentials
 

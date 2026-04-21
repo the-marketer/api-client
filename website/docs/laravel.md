@@ -123,11 +123,11 @@ If the outgoing message does not set `from` or `replyTo`, the transport uses val
 
 ## Constructor config shape
 
-The Laravel config is passed directly to `new Client([...])` and supports:
+The Laravel config is passed directly to `new Client([...])` and supports the same keys as the core client:
 
 - `customerId` (`string`, required)
 - `restKey` (`string`, required)
-- `trackingKey` (`string`, recommended for events/tracking)
-- `restUrl` (`string`, optional)
-- `trackingUrl` (`string`, optional)
-- `maxRetryAttempts` (`int`, optional)
+- `trackingKey` (`string`, optional; default empty — set for events/tracking)
+- `restUrl` (`string`, optional; default `https://t.themarketer.com`)
+- `trackingUrl` (`string`, optional; default `https://t.themarketer.com`)
+- `maxRetryAttempts` (`int`, optional; default `1`)
