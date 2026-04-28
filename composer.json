@@ -2,7 +2,7 @@
   "$schema": "https://getcomposer.org/schema.json",
   "name": "themarketer/api-client",
   "description": "The Marketer PHP api client",
-  "type": "project",
+  "type": "library",
   "license": "MIT",
   "require": {
     "php": "^8.1",
