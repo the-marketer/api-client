@@ -6,12 +6,7 @@ Client PHP pentru API-ul **The Marketer**. Trimite cereri HTTP prin **Guzzle** (
 
 Pentru o varianta structurata, usor de parcurs:
 
-- [Documentation index](./docs/README.md)
-- [Overview](./docs/overview.md)
-- [Quickstart](./docs/quickstart.md)
-- [Authentication](./docs/authentication.md)
-- [Orders](./docs/orders.md)
-- [Errors and Troubleshooting](./docs/errors.md)
+- [API Client Docs](https://the-marketer.github.io/api-client/docs/intro)
 
 ### Docusaurus site (GitHub Pages)
 
