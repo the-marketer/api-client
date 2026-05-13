@@ -37,6 +37,7 @@ const sidebars = {
     },
     'credentials-utilities',
     'errors',
+    'claude-skill',
     {
       type: 'category',
       label: 'Framework Integrations',

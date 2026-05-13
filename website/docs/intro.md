@@ -35,6 +35,7 @@ if (!$ok) {
 - [Quickstart](./quickstart.md)
 - [Authentication](./authentication.md)
 - [Errors and Troubleshooting](./errors.md)
+- [Claude Skill (AI assistant)](./claude-skill.md)
 - [Framework Integrations (Laravel)](./laravel.md)
 
 ## Reading Order
@@ -44,4 +45,5 @@ if (!$ok) {
 3. Authentication
 4. API Reference (Orders, Events, and more)
 5. Errors and Troubleshooting
-6. Framework Integrations (Laravel)
+6. Claude Skill (AI assistant)
+7. Framework Integrations (Laravel)
