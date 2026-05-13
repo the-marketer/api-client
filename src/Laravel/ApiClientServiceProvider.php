@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace TheMarketer\ApiClient\Laravel;
 
+use Illuminate\Contracts\Container\BindingResolutionException;
 use Illuminate\Mail\MailManager;
 use Illuminate\Support\ServiceProvider;
 use TheMarketer\ApiClient\Client;
@@ -33,11 +34,16 @@ class ApiClientServiceProvider extends ServiceProvider
         $this->app->alias(Client::class, 'themarketer.api-client');
     }
 
+    /**
+     * @throws BindingResolutionException
+     */
     public function boot(): void
     {
         $this->publishes([
             __DIR__ . '/../../config/themarketer-api-client.php' => $this->app->configPath('themarketer-api-client.php'),
         ], 'themarketer-api-client-config');
+
+        $this->registerTheMarketerMailerConfig();
 
         $this->app->afterResolving('mail.manager', function ($manager): void {
             if (!$manager instanceof MailManager) {
@@ -48,5 +54,30 @@ class ApiClientServiceProvider extends ServiceProvider
                 return new TheMarketerTransport($this->app->make(Client::class), $config);
             });
         });
+    }
+
+    /**
+     * @throws BindingResolutionException
+     */
+    private function registerTheMarketerMailerConfig(): void
+    {
+        $config = $this->app->make('config');
+        $mailers = (array) $config->get('mail.mailers', []);
+
+        $defaults = [
+            'transport' => 'themarketer',
+            'from' => ['address' => env('MAIL_FROM_ADDRESS')],
+            'reply_to' => ['address' => env('MAIL_REPLY_TO_ADDRESS')],
+        ];
+
+        if (array_key_exists('themarketer', $mailers)) {
+            /** @var array<string, mixed> $existing */
+            $existing = (array) $mailers['themarketer'];
+            $mailers['themarketer'] = array_merge($defaults, $existing);
+        } else {
+            $mailers['themarketer'] = $defaults;
+        }
+
+        $config->set('mail.mailers', $mailers);
     }
 }

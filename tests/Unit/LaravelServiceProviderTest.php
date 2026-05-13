@@ -32,10 +32,6 @@ final class LaravelServiceProviderTest extends TestCase
             'trackingUrl' => 'https://tracking.example.test',
             'maxRetryAttempts' => 4,
         ]);
-
-        $app['config']->set('mail.mailers.themarketer', [
-            'transport' => 'themarketer',
-        ]);
     }
 
     /**

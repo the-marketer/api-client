@@ -75,21 +75,14 @@ $config = TheMarketer::config();
 The provider registers a custom mail transport named `themarketer`, backed by `TheMarketerTransport`.
 It sends emails through `transactionals()` from this package.
 
-Add a mailer entry in `config/mail.php`:
+The provider also merges a `themarketer` entry into `config('mail.mailers')` when the app boots, with:
 
-```php
-'mailers' => [
-    // ...
-    'themarketer' => [
-        'transport' => 'themarketer',
-        // Optional fallback sender/reply-to used when the message does not set them
-        'from' => ['address' => env('MAIL_FROM_ADDRESS')],
-        'reply_to' => ['address' => env('MAIL_REPLY_TO_ADDRESS')],
-    ],
-],
-```
+- `transport` => `themarketer`
+- Optional fallback sender/reply-to (when the message does not set them): `from` / `reply_to` from `MAIL_FROM_ADDRESS` and `MAIL_REPLY_TO_ADDRESS`
 
-You can set it as default:
+If you already define `mail.mailers.themarketer` in `config/mail.php`, your values override these defaults for overlapping keys.
+
+You can set it as default in `.env`:
 
 ```env
 MAIL_MAILER=themarketer
